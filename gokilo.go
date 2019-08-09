@@ -3,18 +3,29 @@ package main
 import (
 	"os"
 	"fmt"
+
+	// golang syscall main package is deprecated and
+	// points to sys/<os> packages to be used instead
 	syscall "golang.org/x/sys/unix"
 )
 
+// enableRawMode switches from cooked or canonical mode to raw mode
+// by using syscalls. Currently this is the implrementation for Unix only
 func enableRawMode() error {
 
+	// Gets TermIOS data structure. From glibc, we find the cmd should be TCGETS
+	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcgetattr.c.html
 	termios, err := syscall.IoctlGetTermios(syscall.Stdin, syscall.TCGETS)
 	if err != nil{
 		return err
 	} 
 
+	// turn off echo by using a bitwise unset operator &^
 	termios.Lflag = termios.Lflag &^syscall.ECHO
 
+	// We from the code of tcsetattr in glibc, we find that for TCSAFLUSH, 
+	// the corresponding command is TCSETSF 
+	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcsetattr.c.html
 	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, termios); err != nil{
 		return err
 	}
