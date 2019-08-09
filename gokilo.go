@@ -24,7 +24,7 @@ func enableRawMode() error {
 
 	origTermios = *termios
 
-	// turn off echo by using a bitwise unset operator &^
+	// turn off echo & canonical mode by using a bitwise clear operator &^
 	termios.Lflag = termios.Lflag &^ (syscall.ECHO|syscall.ICANON)
 
 	// We from the code of tcsetattr in glibc, we find that for TCSAFLUSH, 
