@@ -49,14 +49,14 @@ func disableRawMode() error{
 
 func safeExit(err error){
 	if err1 := disableRawMode(); err1 != nil{
-		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
 	}
 	
 	if err == nil{
 		os.Exit(0)
 	}
 
-	fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+	fmt.Fprintf(os.Stderr, "Error: %s\r\n", err)
 	os.Exit(1)
 }
 
@@ -78,9 +78,9 @@ func main(){
 			safeExit(nil)
 		default:
 			if unicode.IsControl(rune(b[0])){
-				fmt.Printf("%d\n", b[0])
+				fmt.Printf("%d\r\n", b[0])
 			}else{
-			fmt.Printf("%d (%c)\n", b[0], b[0])
+			fmt.Printf("%d (%c)\r\n", b[0], b[0])
 			}
 		}
 	}
