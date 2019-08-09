@@ -15,7 +15,7 @@ func enableRawMode() error {
 
 	termios.Lflag = termios.Lflag &^syscall.ECHO
 
-	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETS, termios); err != nil{
+	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, termios); err != nil{
 		return err
 	}
 
