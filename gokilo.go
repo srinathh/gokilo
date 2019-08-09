@@ -11,7 +11,10 @@ import (
 	syscall "golang.org/x/sys/unix"
 )
 
+/*** data ***/
 var origTermios syscall.Termios
+
+/*** terminal ***/
 
 // enableRawMode switches from cooked or canonical mode to raw mode
 // by using syscalls. Currently this is the implrementation for Unix only
@@ -50,6 +53,7 @@ func disableRawMode() error{
 	return nil
 }
 
+
 func safeExit(err error){
 	if err1 := disableRawMode(); err1 != nil{
 		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
@@ -63,10 +67,12 @@ func safeExit(err error){
 	os.Exit(1)
 }
 
+/*** init ***/
+
 func main(){
 
 	if err := enableRawMode(); err != nil{
-		fmt.Fprintln(os.Stderr, err)
+		safeExit(err)
 	}
 	
 
