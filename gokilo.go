@@ -1,6 +1,7 @@
 package main 
 
 import (
+	"io"
 	"os"
 	"fmt"
 	"unicode"
@@ -30,7 +31,8 @@ func enableRawMode() error {
 	termios.Iflag = termios.Iflag &^ (syscall.IXON| syscall.ICRNL|syscall.BRKINT|syscall.INPCK|syscall.ISTRIP)
 	termios.Oflag = termios.Oflag &^ (syscall.OPOST)
 	termios.Cflag = termios.Cflag | syscall.CS8
-
+	termios.Cc[syscall.VMIN]=0
+	termios.Cc[syscall.VTIME]=1
 	// We from the code of tcsetattr in glibc, we find that for TCSAFLUSH, 
 	// the corresponding command is TCSETSF 
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcsetattr.c.html
@@ -73,7 +75,9 @@ func main(){
 		_, err := os.Stdin.Read(b)		
 
 		switch{
-		case err != nil:
+		case err == io.EOF:
+			fmt.Print("No input\r\n")
+		case err != nil && err != io.EOF:
 			safeExit(err)
 		case  b[0]=='q':
 			safeExit(nil)
