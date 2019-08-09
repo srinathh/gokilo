@@ -9,6 +9,8 @@ import (
 	syscall "golang.org/x/sys/unix"
 )
 
+var origTermios syscall.Termios
+
 // enableRawMode switches from cooked or canonical mode to raw mode
 // by using syscalls. Currently this is the implrementation for Unix only
 func enableRawMode() error {
@@ -19,6 +21,8 @@ func enableRawMode() error {
 	if err != nil{
 		return err
 	} 
+
+	origTermios = *termios
 
 	// turn off echo by using a bitwise unset operator &^
 	termios.Lflag = termios.Lflag &^syscall.ECHO
@@ -31,6 +35,26 @@ func enableRawMode() error {
 	}
 
 	return nil
+}
+
+func disableRawMode() error{
+	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, &origTermios); err != nil{
+		return err
+	}
+	return nil
+}
+
+func safeExit(err error){
+	if err1 := disableRawMode(); err1 != nil{
+		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\n\r", err)
+	}
+	
+	if err == nil{
+		os.Exit(0)
+	}
+
+	fmt.Fprintf(os.Stderr, "Error: %s\n\r", err)
+	os.Exit(1)
 }
 
 func main(){
@@ -49,7 +73,7 @@ func main(){
 		}
 
 		if b[0]=='q'{
-			break
+			safeExit(nil)
 		}
 	}
 }
