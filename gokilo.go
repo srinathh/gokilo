@@ -22,6 +22,7 @@ func ctrlKey(b byte) byte{
 /*** data ***/
 
 type editorConfig struct{
+	cx, cy int
 	screenRows int
 	screenCols int
 	origTermios syscall.Termios
