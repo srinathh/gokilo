@@ -129,7 +129,10 @@ func editorRefreshScreen(){
 
 func editorDrawRows(){
 	for j := 0; j < cfg.screenRows; j++{
-		fmt.Fprint(os.Stdout,"~\r\n")
+		fmt.Fprint(os.Stdout,"~")
+		if j < cfg.screenRows-1{
+			fmt.Fprint(os.Stdout,"\r\n")
+		}
 	}
 }
 
