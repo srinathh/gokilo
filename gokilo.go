@@ -119,6 +119,7 @@ func editorRefreshScreen(){
 	// clear screen
 	ab := bytes.Buffer{}
 
+	fmt.Fprint(&ab,"\x1b[?25l")
 	fmt.Fprint(&ab, "\x1b[2J")
 	fmt.Fprint(&ab, "\x1b[H")
 
@@ -132,6 +133,7 @@ func editorRefreshScreen(){
 
 	// reposition cursor
 	fmt.Fprint(&ab, "\x1b[H")
+	fmt.Fprint(&ab,"\x1b[?25h")
 
 	os.Stdout.Write(ab.Bytes())
 
