@@ -128,13 +128,7 @@ func editorRefreshScreen(){
 	// move cursor to top left
 	fmt.Fprint(&ab, "\x1b[H")
 
-	//editorDrawRows(ab)
-	for j := 0; j < cfg.screenRows; j++{
-		fmt.Fprint(&ab,"~")
-		if j < cfg.screenRows-1{
-			fmt.Fprint(&ab,"\r\n")
-		}
-	}
+	editorDrawRows(&ab)
 
 	// reposition cursor
 	fmt.Fprint(&ab, "\x1b[H")
@@ -146,11 +140,12 @@ func editorRefreshScreen(){
 
 }
 
-func editorDrawRows(ab bytes.Buffer){
+func editorDrawRows(ab *bytes.Buffer){
 	for j := 0; j < cfg.screenRows; j++{
-		fmt.Fprint(&ab,"~")
+		fmt.Fprint(ab,"~")
+
 		if j < cfg.screenRows-1{
-			fmt.Fprint(&ab,"\r\n")
+			fmt.Fprint(ab,"\r\n")
 		}
 	}
 }
