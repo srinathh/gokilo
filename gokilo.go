@@ -12,6 +12,9 @@ import (
 	syscall "golang.org/x/sys/unix"
 )
 /*** defines ***/
+
+const kiloVersion = "0.0.1"
+
 func ctrlKey(b byte) byte{
 	return b&0x1f
 }
@@ -142,7 +145,21 @@ func editorRefreshScreen(){
 
 func editorDrawRows(ab *bytes.Buffer){
 	for j := 0; j < cfg.screenRows; j++{
-		fmt.Fprint(ab,"~")
+
+		if j == cfg.screenRows/3{
+			welcomeMsg := fmt.Sprintf("Kilo Editor -- version %s", kiloVersion)
+			welcomeLen := len(welcomeMsg)
+
+			if welcomeLen > cfg.screenCols{
+				welcomeMsg = welcomeMsg[:welcomeLen]
+				welcomeLen= cfg.screenCols
+			}
+
+			fmt.Fprint(ab, welcomeMsg)
+
+		}else{
+			fmt.Fprint(ab,"~")
+		}
 
 		// clear to end of line
 		fmt.Fprint(ab,"\x1b[K")
