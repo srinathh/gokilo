@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"errors"
 	"fmt"
 
 	// golang syscall main package is deprecated and
@@ -101,8 +102,11 @@ func editorReadKey() (byte, error){
 func getWindowSize() (int, int, error){
 
 	ws, err := syscall.IoctlGetWinsize(syscall.Stdout, syscall.TIOCGWINSZ)
-	if err != nil{
+	if err != nil {
 		return 0, 0, err
+	}
+	if ws.Row == 0 || ws.Col == 0{
+		return 0, 0, errors.New("got non zero column or row")
 	}
 
 	return int(ws.Row), int(ws.Col), nil;
@@ -124,7 +128,7 @@ func editorRefreshScreen(){
 }
 
 func editorDrawRows(){
-	for j := 0; j < 24; j++{
+	for j := 0; j < cfg.screenRows; j++{
 		fmt.Fprint(os.Stdout,"~\r\n")
 	}
 }
