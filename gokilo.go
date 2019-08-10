@@ -17,6 +17,8 @@ func ctrlKey(b byte) byte{
 /*** data ***/
 
 type editorConfig struct{
+	screenRows int
+	screenCols int
 	origTermios syscall.Termios
 }
 
@@ -61,7 +63,6 @@ func disableRawMode() error{
 	return nil
 }
 
-
 func safeExit(err error){
 	fmt.Fprint(os.Stdout, "\x1b[2J")
 	fmt.Fprint(os.Stdout, "\x1b[H")
@@ -95,6 +96,17 @@ func editorReadKey() (byte, error){
 			return keyBuf[0], nil
 		}
 	}
+}
+
+func getWindowSize() (int, int, error){
+
+	ws, err := syscall.IoctlGetWinsize(syscall.Stdout, syscall.TIOCGWINSZ)
+	if err != nil{
+		return 0, 0, err
+	}
+
+	return int(ws.Row), int(ws.Col), nil;
+
 }
 
 /*** output ***/
@@ -135,12 +147,25 @@ func editorProcessKeypress()error{
 
 /*** init ***/
 
+func initEditor() error {
+	rows, cols, err := getWindowSize(); 
+	if err != nil{
+		return err
+	}
+	cfg.screenRows = rows
+	cfg.screenCols = cols
+	return nil
+}
+
 func main(){
 
 	if err := enableRawMode(); err != nil{
 		safeExit(err)
 	}
-	
+
+	if err := initEditor(); err != nil{
+		safeExit(err)
+	}
 
 	for{
 		editorRefreshScreen()
