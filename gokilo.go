@@ -10,6 +10,10 @@ import (
 	// points to sys/<os> packages to be used instead
 	syscall "golang.org/x/sys/unix"
 )
+/*** defines ***/
+func ctrlKey(b byte) byte{
+	return b&0x1f
+}
 
 /*** data ***/
 var origTermios syscall.Termios
@@ -85,7 +89,7 @@ func main(){
 			fmt.Print("No input\r\n")
 		case err != nil:
 			safeExit(err)
-		case  b[0]=='q':
+		case  b[0]==ctrlKey('q'):
 			safeExit(nil)
 		default:
 			if unicode.IsControl(rune(b[0])){
