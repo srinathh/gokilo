@@ -1,30 +1,31 @@
-package main 
+package main
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"os"
-	"errors"
-	"bytes"
-	"fmt"
 
 	// golang syscall main package is deprecated and
 	// points to sys/<os> packages to be used instead
 	syscall "golang.org/x/sys/unix"
 )
+
 /*** defines ***/
 
 const kiloVersion = "0.0.1"
 
-func ctrlKey(b byte) byte{
-	return b&0x1f
+func ctrlKey(b byte) byte {
+	return b & 0x1f
 }
 
 /*** data ***/
 
-type editorConfig struct{
-	cx, cy int
-	screenRows int
-	screenCols int
+type editorConfig struct {
+	cx, cy      int
+	screenRows  int
+	screenCols  int
 	origTermios syscall.Termios
 }
 
@@ -39,45 +40,45 @@ func enableRawMode() error {
 	// Gets TermIOS data structure. From glibc, we find the cmd should be TCGETS
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcgetattr.c.html
 	termios, err := syscall.IoctlGetTermios(syscall.Stdin, syscall.TCGETS)
-	if err != nil{
+	if err != nil {
 		return err
-	} 
+	}
 
 	cfg.origTermios = *termios
 
 	// turn off echo & canonical mode by using a bitwise clear operator &^
-	termios.Lflag = termios.Lflag &^ (syscall.ECHO|syscall.ICANON|syscall.ISIG|syscall.IEXTEN)
-	termios.Iflag = termios.Iflag &^ (syscall.IXON| syscall.ICRNL|syscall.BRKINT|syscall.INPCK|syscall.ISTRIP)
+	termios.Lflag = termios.Lflag &^ (syscall.ECHO | syscall.ICANON | syscall.ISIG | syscall.IEXTEN)
+	termios.Iflag = termios.Iflag &^ (syscall.IXON | syscall.ICRNL | syscall.BRKINT | syscall.INPCK | syscall.ISTRIP)
 	termios.Oflag = termios.Oflag &^ (syscall.OPOST)
 	termios.Cflag = termios.Cflag | syscall.CS8
-	termios.Cc[syscall.VMIN]=0
-	termios.Cc[syscall.VTIME]=1
-	// We from the code of tcsetattr in glibc, we find that for TCSAFLUSH, 
-	// the corresponding command is TCSETSF 
+	termios.Cc[syscall.VMIN] = 0
+	termios.Cc[syscall.VTIME] = 1
+	// We from the code of tcsetattr in glibc, we find that for TCSAFLUSH,
+	// the corresponding command is TCSETSF
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcsetattr.c.html
-	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, termios); err != nil{
+	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, termios); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func disableRawMode() error{
-	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, &cfg.origTermios); err != nil{
+func disableRawMode() error {
+	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, &cfg.origTermios); err != nil {
 		return err
 	}
 	return nil
 }
 
-func safeExit(err error){
+func safeExit(err error) {
 	fmt.Fprint(os.Stdout, "\x1b[2J")
 	fmt.Fprint(os.Stdout, "\x1b[H")
 
-	if err1 := disableRawMode(); err1 != nil{
+	if err1 := disableRawMode(); err1 != nil {
 		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
 	}
-	
-	if err == nil{
+
+	if err == nil {
 		os.Exit(0)
 	}
 
@@ -87,16 +88,17 @@ func safeExit(err error){
 
 // single space buffer to reduce allocations
 var keyBuf = []byte{0}
-func editorReadKey() (byte, error){
+
+func editorReadKey() (byte, error) {
 
 	for {
-		n, err := os.Stdin.Read(keyBuf)		
-		switch{
+		n, err := os.Stdin.Read(keyBuf)
+		switch {
 		case err == io.EOF:
 			continue
 		case err != nil:
 			return 0, err
-		case n==0:
+		case n == 0:
 			continue
 		default:
 			return keyBuf[0], nil
@@ -104,27 +106,27 @@ func editorReadKey() (byte, error){
 	}
 }
 
-func getWindowSize() (int, int, error){
+func getWindowSize() (int, int, error) {
 
 	ws, err := syscall.IoctlGetWinsize(syscall.Stdout, syscall.TIOCGWINSZ)
 	if err != nil {
 		return 0, 0, err
 	}
-	if ws.Row == 0 || ws.Col == 0{
+	if ws.Row == 0 || ws.Col == 0 {
 		return 0, 0, errors.New("got non zero column or row")
 	}
 
-	return int(ws.Row), int(ws.Col), nil;
+	return int(ws.Row), int(ws.Col), nil
 
 }
 
 /*** output ***/
-func editorRefreshScreen(){
+func editorRefreshScreen() {
 	// clear screen
 	ab := bytes.Buffer{}
 
 	// hide cursor
-	fmt.Fprint(&ab,"\x1b[?25l")
+	fmt.Fprint(&ab, "\x1b[?25l")
 
 	// clear screen
 	// fmt.Fprint(&ab, "\x1b[2J")
@@ -135,64 +137,65 @@ func editorRefreshScreen(){
 	editorDrawRows(&ab)
 
 	// reposition cursor
-	fmt.Fprint(&ab, "\x1b[H")
+	//fmt.Fprint(&ab, "\x1b[H")
+	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy+1, cfg.cx+1)
 
 	// show cursor
-	fmt.Fprint(&ab,"\x1b[?25h")
+	fmt.Fprint(&ab, "\x1b[?25h")
 
 	os.Stdout.Write(ab.Bytes())
 
 }
 
-func editorDrawRows(ab *bytes.Buffer){
-	for j := 0; j < cfg.screenRows; j++{
+func editorDrawRows(ab *bytes.Buffer) {
+	for j := 0; j < cfg.screenRows; j++ {
 
-		if j == cfg.screenRows/3{
+		if j == cfg.screenRows/3 {
 			welcomeMsg := fmt.Sprintf("Kilo Editor -- version %s", kiloVersion)
 			welcomeLen := len(welcomeMsg)
 
 			// if the message is too long to fit, truncate
-			if welcomeLen > cfg.screenCols{
+			if welcomeLen > cfg.screenCols {
 				welcomeMsg = welcomeMsg[:cfg.screenCols]
-				welcomeLen= cfg.screenCols
+				welcomeLen = cfg.screenCols
 			}
-			padding := (cfg.screenCols - welcomeLen)/2
+			padding := (cfg.screenCols - welcomeLen) / 2
 
 			// if there is at least 1 padding required, use the Tilde to start line
-			if padding > 0{
+			if padding > 0 {
 				fmt.Fprint(ab, "~")
 				padding--
 			}
-			
+
 			// add appropriate number of spaces
-			for i := 0; i < padding; i++{
+			for i := 0; i < padding; i++ {
 				fmt.Fprint(ab, " ")
 			}
 			fmt.Fprint(ab, welcomeMsg)
 
-		}else{
-			fmt.Fprint(ab,"~")
+		} else {
+			fmt.Fprint(ab, "~")
 		}
 
 		// clear to end of line
-		fmt.Fprint(ab,"\x1b[K")
+		fmt.Fprint(ab, "\x1b[K")
 
-		if j < cfg.screenRows-1{
-			fmt.Fprint(ab,"\r\n")
+		if j < cfg.screenRows-1 {
+			fmt.Fprint(ab, "\r\n")
 		}
 	}
 }
 
 /*** Input ***/
 
-func editorProcessKeypress()error{
+func editorProcessKeypress() error {
 
 	b, err := editorReadKey()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	switch(b){
+	switch b {
 	case ctrlKey('q'):
 		safeExit(nil)
 	}
@@ -202,8 +205,8 @@ func editorProcessKeypress()error{
 /*** init ***/
 
 func initEditor() error {
-	rows, cols, err := getWindowSize(); 
-	if err != nil{
+	rows, cols, err := getWindowSize()
+	if err != nil {
 		return err
 	}
 	cfg.screenRows = rows
@@ -211,19 +214,19 @@ func initEditor() error {
 	return nil
 }
 
-func main(){
+func main() {
 
-	if err := enableRawMode(); err != nil{
+	if err := enableRawMode(); err != nil {
 		safeExit(err)
 	}
 
-	if err := initEditor(); err != nil{
+	if err := initEditor(); err != nil {
 		safeExit(err)
 	}
 
-	for{
+	for {
 		editorRefreshScreen()
-		if err := editorProcessKeypress(); err != nil{
+		if err := editorProcessKeypress(); err != nil {
 			safeExit(err)
 		}
 	}
