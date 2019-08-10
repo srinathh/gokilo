@@ -58,6 +58,9 @@ func disableRawMode() error{
 
 
 func safeExit(err error){
+	fmt.Fprint(os.Stdout, "\x1b[2J")
+	fmt.Fprint(os.Stdout, "\x1b[H")
+
 	if err1 := disableRawMode(); err1 != nil{
 		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
 	}
