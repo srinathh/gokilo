@@ -15,7 +15,12 @@ func ctrlKey(b byte) byte{
 }
 
 /*** data ***/
-var origTermios syscall.Termios
+
+type editorConfig struct{
+	origTermios syscall.Termios
+}
+
+var cfg editorConfig
 
 /*** terminal ***/
 
@@ -30,7 +35,7 @@ func enableRawMode() error {
 		return err
 	} 
 
-	origTermios = *termios
+	cfg.origTermios = *termios
 
 	// turn off echo & canonical mode by using a bitwise clear operator &^
 	termios.Lflag = termios.Lflag &^ (syscall.ECHO|syscall.ICANON|syscall.ISIG|syscall.IEXTEN)
@@ -50,7 +55,7 @@ func enableRawMode() error {
 }
 
 func disableRawMode() error{
-	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, &origTermios); err != nil{
+	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, &cfg.origTermios); err != nil{
 		return err
 	}
 	return nil
