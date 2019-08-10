@@ -89,6 +89,12 @@ func editorReadKey() (byte, error){
 	}
 }
 
+/*** output ***/
+func editorRefreshScreen(){
+	// clear screen
+	fmt.Fprint(os.Stdout, "\x1b[2J")
+}
+
 /*** Input ***/
 
 func editorProcessKeypress()error{
@@ -115,6 +121,7 @@ func main(){
 	
 
 	for{
+		editorRefreshScreen()
 		if err := editorProcessKeypress(); err != nil{
 			safeExit(err)
 		}
