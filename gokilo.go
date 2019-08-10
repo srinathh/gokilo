@@ -198,8 +198,23 @@ func editorProcessKeypress() error {
 	switch b {
 	case ctrlKey('q'):
 		safeExit(nil)
+	case 'h', 'j', 'k', 'l':
+		editorMoveCursor(b)
 	}
 	return nil
+}
+
+func editorMoveCursor(key byte) {
+	switch key {
+	case 'h':
+		cfg.cx--
+	case 'l':
+		cfg.cx++
+	case 'j':
+		cfg.cy++
+	case 'k':
+		cfg.cy--
+	}
 }
 
 /*** init ***/
