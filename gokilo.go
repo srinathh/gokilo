@@ -93,6 +93,7 @@ func editorReadKey() (byte, error){
 func editorRefreshScreen(){
 	// clear screen
 	fmt.Fprint(os.Stdout, "\x1b[2J")
+	fmt.Fprint(os.Stdout, "\x1b[H")
 }
 
 /*** Input ***/
