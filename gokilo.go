@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"errors"
+	"bytes"
 	"fmt"
 
 	// golang syscall main package is deprecated and
@@ -116,22 +117,31 @@ func getWindowSize() (int, int, error){
 /*** output ***/
 func editorRefreshScreen(){
 	// clear screen
-	fmt.Fprint(os.Stdout, "\x1b[2J")
-	fmt.Fprint(os.Stdout, "\x1b[H")
+	ab := bytes.Buffer{}
 
-	editorDrawRows()
+	fmt.Fprint(&ab, "\x1b[2J")
+	fmt.Fprint(&ab, "\x1b[H")
+
+	//editorDrawRows(ab)
+	for j := 0; j < cfg.screenRows; j++{
+		fmt.Fprint(&ab,"~")
+		if j < cfg.screenRows-1{
+			fmt.Fprint(&ab,"\r\n")
+		}
+	}
 
 	// reposition cursor
-	fmt.Fprint(os.Stdout, "\x1b[H")
+	fmt.Fprint(&ab, "\x1b[H")
 
+	os.Stdout.Write(ab.Bytes())
 
 }
 
-func editorDrawRows(){
+func editorDrawRows(ab bytes.Buffer){
 	for j := 0; j < cfg.screenRows; j++{
 		fmt.Fprint(os.Stdout,"~")
 		if j < cfg.screenRows-1{
-			fmt.Fprint(os.Stdout,"\r\n")
+			fmt.Fprint(&ab,"\r\n")
 		}
 	}
 }
