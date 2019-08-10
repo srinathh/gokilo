@@ -78,12 +78,12 @@ func main(){
 
 	b := []byte{0}
 	for{
-		_, err := os.Stdin.Read(b)		
+		n, err := os.Stdin.Read(b)		
 
 		switch{
-		case err == io.EOF:
+		case (err == io.EOF)||(n==0):
 			fmt.Print("No input\r\n")
-		case err != nil && err != io.EOF:
+		case err != nil:
 			safeExit(err)
 		case  b[0]=='q':
 			safeExit(nil)
