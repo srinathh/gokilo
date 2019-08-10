@@ -4,7 +4,6 @@ import (
 	"io"
 	"os"
 	"fmt"
-	"unicode"
 
 	// golang syscall main package is deprecated and
 	// points to sys/<os> packages to be used instead
@@ -71,6 +70,41 @@ func safeExit(err error){
 	os.Exit(1)
 }
 
+// single space buffer to reduce allocations
+var keyBuf = []byte{0}
+func editorReadKey() (byte, error){
+
+	for {
+		n, err := os.Stdin.Read(keyBuf)		
+		switch{
+		case err == io.EOF:
+			continue
+		case err != nil:
+			return 0, err
+		case n==0:
+			continue
+		default:
+			return keyBuf[0], nil
+		}
+	}
+}
+
+/*** Input ***/
+
+func editorProcessKeypress()error{
+
+	b, err := editorReadKey()
+	if err != nil{
+		return err
+	}
+
+	switch(b){
+	case ctrlKey('q'):
+		safeExit(nil)
+	}
+	return nil
+}
+
 /*** init ***/
 
 func main(){
@@ -80,23 +114,9 @@ func main(){
 	}
 	
 
-	b := []byte{0}
 	for{
-		n, err := os.Stdin.Read(b)		
-
-		switch{
-		case (err == io.EOF)||(n==0):
-			fmt.Print("No input\r\n")
-		case err != nil:
+		if err := editorProcessKeypress(); err != nil{
 			safeExit(err)
-		case  b[0]==ctrlKey('q'):
-			safeExit(nil)
-		default:
-			if unicode.IsControl(rune(b[0])){
-				fmt.Printf("%d\r\n", b[0])
-			}else{
-			fmt.Printf("%d (%c)\r\n", b[0], b[0])
-			}
 		}
 	}
 }
