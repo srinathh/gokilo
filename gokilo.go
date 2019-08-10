@@ -123,7 +123,7 @@ func editorRefreshScreen(){
 	fmt.Fprint(&ab,"\x1b[?25l")
 
 	// clear screen
-	fmt.Fprint(&ab, "\x1b[2J")
+	// fmt.Fprint(&ab, "\x1b[2J")
 
 	// move cursor to top left
 	fmt.Fprint(&ab, "\x1b[H")
@@ -143,6 +143,9 @@ func editorRefreshScreen(){
 func editorDrawRows(ab *bytes.Buffer){
 	for j := 0; j < cfg.screenRows; j++{
 		fmt.Fprint(ab,"~")
+
+		// clear to end of line
+		fmt.Fprint(ab,"\x1b[K")
 
 		if j < cfg.screenRows-1{
 			fmt.Fprint(ab,"\r\n")
