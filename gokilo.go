@@ -97,6 +97,19 @@ func editorRefreshScreen(){
 	// clear screen
 	fmt.Fprint(os.Stdout, "\x1b[2J")
 	fmt.Fprint(os.Stdout, "\x1b[H")
+
+	editorDrawRows()
+
+	// reposition cursor
+	fmt.Fprint(os.Stdout, "\x1b[H")
+
+
+}
+
+func editorDrawRows(){
+	for j := 0; j < 24; j++{
+		fmt.Fprint(os.Stdout,"~\r\n")
+	}
 }
 
 /*** Input ***/
