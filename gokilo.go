@@ -16,9 +16,18 @@ import (
 
 const kiloVersion = "0.0.1"
 
-func ctrlKey(b byte) byte {
-	return b & 0x1f
+func ctrlKey(b byte) int {
+	return int(b & 0x1f)
 }
+
+const (
+	keyArrowUp    = 1000
+	keyArrowDown  = 1001
+	keyArrowLeft  = 1002
+	keyArrowRight = 1003
+	keyPageUp     = 1004
+	keyPageDown   = 1005
+)
 
 /*** data ***/
 
@@ -53,7 +62,7 @@ func enableRawMode() error {
 	termios.Cflag = termios.Cflag | syscall.CS8
 	termios.Cc[syscall.VMIN] = 0
 	termios.Cc[syscall.VTIME] = 1
-	// We from the code of tcsetattr in glibc, we find that for TCSAFLUSH,
+	// from the code of tcsetattr in glibc, we find that for TCSAFLUSH,
 	// the corresponding command is TCSETSF
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcsetattr.c.html
 	if err := syscall.IoctlSetTermios(syscall.Stdin, syscall.TCSETSF, termios); err != nil {
@@ -105,7 +114,7 @@ func rawReadKey() (byte, error) {
 	}
 }
 
-func editorReadKey() (byte, error) {
+func editorReadKey() (int, error) {
 
 	for {
 		key, err := rawReadKey()
@@ -131,20 +140,36 @@ func editorReadKey() (byte, error) {
 			}
 
 			if esc0 == '[' {
-				switch {
-				case esc1 == 'A':
-					return 'k', nil
-				case esc1 == 'B':
-					return 'j', nil
-				case esc1 == 'C':
-					return 'l', nil
-				case esc1 == 'D':
-					return 'h', nil
+				if esc1 >= '0' && esc1 <= '9' {
+					esc2, err := rawReadKey()
+					if err == errNoInput {
+						return '\x1b', nil
+					}
+					if esc2 == '~' {
+						switch {
+						case esc1 == '5':
+							return keyPageUp, nil
+						case esc1 == '6':
+							return keyPageDown, nil
+						}
+					}
+
+				} else {
+					switch {
+					case esc1 == 'A':
+						return keyArrowUp, nil
+					case esc1 == 'B':
+						return keyArrowDown, nil
+					case esc1 == 'C':
+						return keyArrowRight, nil
+					case esc1 == 'D':
+						return keyArrowLeft, nil
+					}
 				}
 			}
 
 		default:
-			return key, nil
+			return int(key), nil
 		}
 	}
 }
@@ -241,22 +266,38 @@ func editorProcessKeypress() error {
 	switch b {
 	case ctrlKey('q'):
 		safeExit(nil)
-	case 'h', 'j', 'k', 'l':
+	case keyArrowDown, keyArrowLeft, keyArrowRight, keyArrowUp:
 		editorMoveCursor(b)
+	case keyPageUp:
+		for j := 0; j < cfg.screenRows; j++ {
+			editorMoveCursor(keyArrowUp)
+		}
+	case keyPageDown:
+		for j := 0; j < cfg.screenRows; j++ {
+			editorMoveCursor(keyArrowDown)
+		}
 	}
 	return nil
 }
 
-func editorMoveCursor(key byte) {
+func editorMoveCursor(key int) {
 	switch key {
-	case 'h':
-		cfg.cx--
-	case 'l':
-		cfg.cx++
-	case 'j':
-		cfg.cy++
-	case 'k':
-		cfg.cy--
+	case keyArrowLeft:
+		if cfg.cx != 0 {
+			cfg.cx--
+		}
+	case keyArrowRight:
+		if cfg.cx != cfg.screenCols-1 {
+			cfg.cx++
+		}
+	case keyArrowDown:
+		if cfg.cy != cfg.screenRows-1 {
+			cfg.cy++
+		}
+	case keyArrowUp:
+		if cfg.cy != 0 {
+			cfg.cy--
+		}
 	}
 }
 
