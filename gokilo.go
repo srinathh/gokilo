@@ -88,20 +88,63 @@ func safeExit(err error) {
 
 // single space buffer to reduce allocations
 var keyBuf = []byte{0}
+var seq = []byte{0, 0, 0}
+var errNoInput = errors.New("no input")
+
+func rawReadKey() (byte, error) {
+	n, err := os.Stdin.Read(keyBuf)
+	switch {
+	case err == io.EOF:
+		return 0, errNoInput
+	case err != nil:
+		return 0, err
+	case n == 0:
+		return 0, errNoInput
+	default:
+		return keyBuf[0], nil
+	}
+}
 
 func editorReadKey() (byte, error) {
 
 	for {
-		n, err := os.Stdin.Read(keyBuf)
+		key, err := rawReadKey()
 		switch {
-		case err == io.EOF:
+		case err == errNoInput:
 			continue
 		case err != nil:
 			return 0, err
-		case n == 0:
-			continue
+		case key == '\x1b':
+			esc0, err := rawReadKey()
+			if err == errNoInput {
+				return '\x1b', nil
+			}
+			if err != nil {
+				return 0, err
+			}
+			esc1, err := rawReadKey()
+			if err == errNoInput {
+				return '\x1b', nil
+			}
+			if err != nil {
+				return 0, err
+			}
+
+			if esc0 == '[' {
+				switch {
+				case esc1 == 'A':
+					return 'k', nil
+				case esc1 == 'B':
+					return 'j', nil
+				case esc1 == 'C':
+					return 'l', nil
+				case esc1 == 'D':
+					return 'h', nil
+				}
+			}
+
 		default:
-			return keyBuf[0], nil
+			return key, nil
 		}
 	}
 }
