@@ -29,6 +29,7 @@ const (
 	keyPageDown   = 1005
 	keyHome       = 1006
 	keyEnd        = 1007
+	keyDelete     = 1008
 )
 
 /*** data ***/
@@ -157,6 +158,8 @@ func editorReadKey() (int, error) {
 							return keyHome, nil
 						case '4', '8':
 							return keyEnd, nil
+						case '3':
+							return keyDelete, nil
 						}
 					}
 
