@@ -27,6 +27,8 @@ const (
 	keyArrowRight = 1003
 	keyPageUp     = 1004
 	keyPageDown   = 1005
+	keyHome       = 1006
+	keyEnd        = 1007
 )
 
 /*** data ***/
@@ -146,25 +148,40 @@ func editorReadKey() (int, error) {
 						return '\x1b', nil
 					}
 					if esc2 == '~' {
-						switch {
-						case esc1 == '5':
+						switch esc1 {
+						case '5':
 							return keyPageUp, nil
-						case esc1 == '6':
+						case '6':
 							return keyPageDown, nil
+						case '1', '7':
+							return keyHome, nil
+						case '4', '8':
+							return keyEnd, nil
 						}
 					}
 
 				} else {
-					switch {
-					case esc1 == 'A':
+					switch esc1 {
+					case 'A':
 						return keyArrowUp, nil
-					case esc1 == 'B':
+					case 'B':
 						return keyArrowDown, nil
-					case esc1 == 'C':
+					case 'C':
 						return keyArrowRight, nil
-					case esc1 == 'D':
+					case 'D':
 						return keyArrowLeft, nil
+					case 'H':
+						return keyHome, nil
+					case 'F':
+						return keyEnd, nil
 					}
+				}
+			} else if esc0 == 'O' {
+				switch esc1 {
+				case 'H':
+					return keyHome, nil
+				case 'F':
+					return keyEnd, nil
 				}
 			}
 
@@ -276,6 +293,10 @@ func editorProcessKeypress() error {
 		for j := 0; j < cfg.screenRows; j++ {
 			editorMoveCursor(keyArrowDown)
 		}
+	case keyHome:
+		cfg.cx = 0
+	case keyEnd:
+		cfg.cx = cfg.screenCols - 1
 	}
 	return nil
 }
@@ -283,19 +304,19 @@ func editorProcessKeypress() error {
 func editorMoveCursor(key int) {
 	switch key {
 	case keyArrowLeft:
-		if cfg.cx != 0 {
+		if cfg.cx > 0 {
 			cfg.cx--
 		}
 	case keyArrowRight:
-		if cfg.cx != cfg.screenCols-1 {
+		if cfg.cx < cfg.screenCols-1 {
 			cfg.cx++
 		}
 	case keyArrowDown:
-		if cfg.cy != cfg.screenRows-1 {
+		if cfg.cy < cfg.screenRows-1 {
 			cfg.cy++
 		}
 	case keyArrowUp:
-		if cfg.cy != 0 {
+		if cfg.cy > 0 {
 			cfg.cy--
 		}
 	}
