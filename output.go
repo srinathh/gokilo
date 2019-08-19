@@ -63,7 +63,11 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			fmt.Fprint(ab, string(cfg.rows[y]))
+			rowSize := len(cfg.rows[y])
+			if rowSize > cfg.screenCols {
+				rowSize = cfg.screenCols
+			}
+			fmt.Fprint(ab, string(cfg.rows[y][:rowSize]))
 		}
 
 		// clear to end of line
