@@ -36,7 +36,8 @@ func editorDrawRows(ab *bytes.Buffer) {
 	for y := 0; y < cfg.screenRows; y++ {
 
 		if y >= len(cfg.rows) {
-			if y == cfg.screenRows/3 {
+			// print welcome message only if there is no file being edited
+			if len(cfg.rows) == 0 && y == cfg.screenRows/3 {
 				welcomeMsg := fmt.Sprintf("Kilo Editor -- version %s", kiloVersion)
 				welcomeLen := len(welcomeMsg)
 
