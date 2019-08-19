@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 )
 
@@ -14,21 +13,16 @@ func editorOpen(fileName string) error {
 	}
 	defer r.Close()
 
-	// TK : WOrking
+	cfg.rows = []erow{}
+
+	// TK : Working
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text()) // Println will add back the final '\n'
+		row := erow([]rune(scanner.Text()))
+		cfg.rows = append(cfg.rows, row)
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+		return err
 	}
-
-	defText := "Hello World Hello World Hello World Hello World Hello World Hello World Hello World Hello World Hello World Hello World Hello World Hello World"
-	row := erow{}
-	for _, runeVal := range defText {
-		row = append(row, runeVal)
-	}
-
-	cfg.rows = []erow{row}
 	return nil
 }
