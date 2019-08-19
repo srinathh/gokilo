@@ -1,5 +1,7 @@
 package main
 
+import "os"
+
 // golang syscall main package is deprecated and
 // points to sys/<os> packages to be used instead
 
@@ -29,8 +31,10 @@ func main() {
 		safeExit(err)
 	}
 
-	if err := editorOpen(); err != nil {
-		safeExit(err)
+	if len(os.Args) >= 2 {
+		if err := editorOpen(os.Args[1]); err != nil {
+			safeExit(err)
+		}
 	}
 
 	for {
