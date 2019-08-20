@@ -35,7 +35,9 @@ func editorRefreshScreen() {
 func editorDrawRows(ab *bytes.Buffer) {
 	for y := 0; y < cfg.screenRows; y++ {
 
-		if y >= len(cfg.rows) {
+		fileRow := y + cfg.rowOffset
+
+		if fileRow >= len(cfg.rows) {
 			// print welcome message only if there is no file being edited
 			if len(cfg.rows) == 0 && y == cfg.screenRows/3 {
 				welcomeMsg := fmt.Sprintf("Kilo Editor -- version %s", kiloVersion)
@@ -64,11 +66,11 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			rowSize := len(cfg.rows[y])
+			rowSize := len(cfg.rows[fileRow])
 			if rowSize > cfg.screenCols {
 				rowSize = cfg.screenCols
 			}
-			fmt.Fprint(ab, string(cfg.rows[y][:rowSize]))
+			fmt.Fprint(ab, string(cfg.rows[fileRow][:rowSize]))
 		}
 
 		// clear to end of line
