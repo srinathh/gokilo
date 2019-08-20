@@ -8,6 +8,7 @@ import (
 
 func editorRefreshScreen() {
 	// clear screen
+	editorScroll()
 	ab := bytes.Buffer{}
 
 	// hide cursor
@@ -23,13 +24,23 @@ func editorRefreshScreen() {
 
 	// reposition cursor
 	//fmt.Fprint(&ab, "\x1b[H")
-	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy+1, cfg.cx+1)
+	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.cx+1)
 
 	// show cursor
 	fmt.Fprint(&ab, "\x1b[?25h")
 
 	os.Stdout.Write(ab.Bytes())
 
+}
+
+func editorScroll() {
+	if cfg.cy < cfg.rowOffset {
+		cfg.rowOffset = cfg.cy
+	}
+
+	if cfg.cy >= cfg.rowOffset+cfg.screenRows {
+		cfg.rowOffset = cfg.cy - cfg.screenRows + 1
+	}
 }
 
 func editorDrawRows(ab *bytes.Buffer) {
