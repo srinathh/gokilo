@@ -24,7 +24,7 @@ func editorRefreshScreen() {
 
 	// reposition cursor
 	//fmt.Fprint(&ab, "\x1b[H")
-	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.cx+1)
+	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.cx-cfg.colOffset+1)
 
 	// show cursor
 	fmt.Fprint(&ab, "\x1b[?25h")
@@ -40,6 +40,14 @@ func editorScroll() {
 
 	if cfg.cy >= cfg.rowOffset+cfg.screenRows {
 		cfg.rowOffset = cfg.cy - cfg.screenRows + 1
+	}
+
+	if cfg.cx < cfg.colOffset {
+		cfg.colOffset = cfg.cx
+	}
+
+	if cfg.cx >= cfg.colOffset+cfg.screenCols {
+		cfg.colOffset = cfg.cx - cfg.screenCols + 1
 	}
 }
 
@@ -77,11 +85,16 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			rowSize := len(cfg.rows[fileRow])
+			rowSize := len(cfg.rows[fileRow]) - cfg.colOffset
+			if rowSize < 0 {
+				rowSize = 0
+			}
 			if rowSize > cfg.screenCols {
 				rowSize = cfg.screenCols
 			}
-			fmt.Fprint(ab, string(cfg.rows[fileRow][:rowSize]))
+			if rowSize > 0 {
+				fmt.Fprint(ab, string(cfg.rows[fileRow][cfg.colOffset:cfg.colOffset+rowSize]))
+			}
 		}
 
 		// clear to end of line

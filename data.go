@@ -10,6 +10,7 @@ type editorConfig struct {
 	screenCols  int
 	rows        []erow
 	rowOffset   int
+	colOffset   int
 	origTermios syscall.Termios
 }
 

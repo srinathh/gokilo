@@ -47,9 +47,7 @@ func editorMoveCursor(key int) {
 			cfg.cx--
 		}
 	case keyArrowRight:
-		if cfg.cx < cfg.screenCols-1 {
-			cfg.cx++
-		}
+		cfg.cx++
 	case keyArrowDown:
 		if cfg.cy < len(cfg.rows) {
 			cfg.cy++
