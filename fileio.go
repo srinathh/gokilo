@@ -15,16 +15,25 @@ func editorOpen(fileName string) error {
 
 	cfg.rows = []erow{}
 
-	// TK : Working
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		row := erow{
 			chars: []rune(scanner.Text()),
 		}
+		row.render = editorUpdateRow(row.chars)
+
 		cfg.rows = append(cfg.rows, row)
 	}
 	if err := scanner.Err(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func editorUpdateRow(src []rune) []rune {
+	dest := []rune{}
+	for _, r := range src {
+		dest = append(dest, r)
+	}
+	return dest
 }
