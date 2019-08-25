@@ -66,4 +66,16 @@ func editorMoveCursor(key int) {
 			cfg.cy--
 		}
 	}
+
+	// we may have moved to a different row, so reset conditions
+	pastEOF = cfg.cy >= len(cfg.rows)
+
+	rowLen := 0
+	if !pastEOF {
+		rowLen = len(cfg.rows[cfg.cy])
+	}
+
+	if cfg.cx > rowLen {
+		cfg.cx = rowLen
+	}
 }
