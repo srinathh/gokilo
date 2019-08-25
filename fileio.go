@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"os"
+	"strings"
 )
 
 func editorOpen(fileName string) error {
@@ -33,6 +34,9 @@ func editorOpen(fileName string) error {
 func editorUpdateRow(src []rune) []rune {
 	dest := []rune{}
 	for _, r := range src {
+		if r == '\t' {
+			dest = append(dest, []rune(strings.Repeat(" ", 8))...)
+		}
 		dest = append(dest, r)
 	}
 	return dest
