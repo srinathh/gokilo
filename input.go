@@ -41,13 +41,22 @@ func editorProcessKeypress() error {
 }
 
 func editorMoveCursor(key int) {
+
+	pastEOF := cfg.cy >= len(cfg.rows)
+
 	switch key {
 	case keyArrowLeft:
 		if cfg.cx > 0 {
 			cfg.cx--
 		}
 	case keyArrowRight:
-		cfg.cx++
+		// right moves only if we're within a valid line.
+		// for past EOF, there's no movement
+		if !pastEOF {
+			if cfg.cx < len(cfg.rows[cfg.cy]) {
+				cfg.cx++
+			}
+		}
 	case keyArrowDown:
 		if cfg.cy < len(cfg.rows) {
 			cfg.cy++
