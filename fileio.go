@@ -18,7 +18,9 @@ func editorOpen(fileName string) error {
 	// TK : Working
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		row := erow([]rune(scanner.Text()))
+		row := erow{
+			chars: []rune(scanner.Text()),
+		}
 		cfg.rows = append(cfg.rows, row)
 	}
 	if err := scanner.Err(); err != nil {

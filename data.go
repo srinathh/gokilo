@@ -2,7 +2,10 @@ package main
 
 import syscall "golang.org/x/sys/unix"
 
-type erow []rune
+type erow struct {
+	chars  []rune
+	render []rune
+}
 
 type editorConfig struct {
 	cx, cy      int

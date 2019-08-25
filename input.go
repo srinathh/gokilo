@@ -50,15 +50,15 @@ func editorMoveCursor(key int) {
 			cfg.cx--
 		} else if cfg.cy > 0 {
 			cfg.cy--
-			cfg.cx = len(cfg.rows[cfg.cy])
+			cfg.cx = len(cfg.rows[cfg.cy].chars)
 		}
 	case keyArrowRight:
 		// right moves only if we're within a valid line.
 		// for past EOF, there's no movement
 		if !pastEOF {
-			if cfg.cx < len(cfg.rows[cfg.cy]) {
+			if cfg.cx < len(cfg.rows[cfg.cy].chars) {
 				cfg.cx++
-			} else if cfg.cx == len(cfg.rows[cfg.cy]) {
+			} else if cfg.cx == len(cfg.rows[cfg.cy].chars) {
 				cfg.cy++
 				cfg.cx = 0
 			}
@@ -78,7 +78,7 @@ func editorMoveCursor(key int) {
 
 	rowLen := 0
 	if !pastEOF {
-		rowLen = len(cfg.rows[cfg.cy])
+		rowLen = len(cfg.rows[cfg.cy].chars)
 	}
 
 	if cfg.cx > rowLen {
