@@ -85,7 +85,7 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			rowSize := len(cfg.rows[fileRow].chars) - cfg.colOffset
+			rowSize := len(cfg.rows[fileRow].render) - cfg.colOffset
 			if rowSize < 0 {
 				rowSize = 0
 			}
@@ -93,7 +93,7 @@ func editorDrawRows(ab *bytes.Buffer) {
 				rowSize = cfg.screenCols
 			}
 			if rowSize > 0 {
-				fmt.Fprint(ab, string(cfg.rows[fileRow].chars[cfg.colOffset:cfg.colOffset+rowSize]))
+				fmt.Fprint(ab, string(cfg.rows[fileRow].render[cfg.colOffset:cfg.colOffset+rowSize]))
 			}
 		}
 
