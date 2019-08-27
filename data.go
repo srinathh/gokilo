@@ -1,6 +1,10 @@
 package main
 
-import syscall "golang.org/x/sys/unix"
+import (
+	"strings"
+
+	syscall "golang.org/x/sys/unix"
+)
 
 type erow struct {
 	chars  []rune
@@ -18,3 +22,7 @@ type editorConfig struct {
 }
 
 var cfg editorConfig
+
+const kiloTabStop = 4
+
+var tabSpaces = []rune(strings.Repeat(" ", kiloTabStop))
