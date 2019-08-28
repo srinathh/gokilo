@@ -13,6 +13,7 @@ type erow struct {
 
 type editorConfig struct {
 	cx, cy      int
+	rx          int
 	screenRows  int
 	screenCols  int
 	rows        []erow

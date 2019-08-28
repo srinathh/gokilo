@@ -24,7 +24,7 @@ func editorRefreshScreen() {
 
 	// reposition cursor
 	//fmt.Fprint(&ab, "\x1b[H")
-	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.cx-cfg.colOffset+1)
+	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.rx-cfg.colOffset+1)
 
 	// show cursor
 	fmt.Fprint(&ab, "\x1b[?25h")
@@ -33,7 +33,24 @@ func editorRefreshScreen() {
 
 }
 
+func editorRowCxToRx(rowIdx, cx int) int {
+	rx := 0
+	for j := 0; j < cx; j++ {
+		if cfg.rows[rowIdx].chars[j] == '\t' {
+			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
+		}
+		rx++
+	}
+	return rx
+
+}
+
 func editorScroll() {
+	cfg.rx = 0
+	if cfg.cy < len(cfg.rows) {
+		cfg.rx = editorRowCxToRx(cfg.cy, cfg.cx)
+	}
+
 	if cfg.cy < cfg.rowOffset {
 		cfg.rowOffset = cfg.cy
 	}
@@ -42,12 +59,12 @@ func editorScroll() {
 		cfg.rowOffset = cfg.cy - cfg.screenRows + 1
 	}
 
-	if cfg.cx < cfg.colOffset {
-		cfg.colOffset = cfg.cx
+	if cfg.rx < cfg.colOffset {
+		cfg.colOffset = cfg.rx
 	}
 
-	if cfg.cx >= cfg.colOffset+cfg.screenCols {
-		cfg.colOffset = cfg.cx - cfg.screenCols + 1
+	if cfg.rx >= cfg.colOffset+cfg.screenCols {
+		cfg.colOffset = cfg.rx - cfg.screenCols + 1
 	}
 }
 
