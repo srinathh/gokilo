@@ -20,6 +20,7 @@ type editorConfig struct {
 	rowOffset   int
 	colOffset   int
 	origTermios syscall.Termios
+	fileName    string
 }
 
 var cfg editorConfig

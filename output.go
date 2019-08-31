@@ -71,7 +71,20 @@ func editorScroll() {
 
 func editorDrawStatusBar(ab *bytes.Buffer) {
 	fmt.Fprint(ab, "\x1b[7m")
-	for j := 0; j < cfg.screenCols; j++ {
+
+	fileName := cfg.fileName
+	if fileName == "" {
+		fileName = "No Name"
+	}
+	statusString := fmt.Sprintf("%.20s - %d lines", fileName, len(cfg.rows))
+
+	if len(statusString) > cfg.screenCols {
+		statusString = statusString[:cfg.screenCols]
+	}
+
+	fmt.Fprint(ab, statusString)
+
+	for j := len(statusString); j < cfg.screenCols; j++ {
 		fmt.Fprint(ab, " ")
 	}
 	fmt.Fprint(ab, "\x1b[m")

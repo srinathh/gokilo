@@ -27,6 +27,7 @@ func editorOpen(fileName string) error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
+	cfg.fileName = fileName
 	return nil
 }
 
