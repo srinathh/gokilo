@@ -40,7 +40,9 @@ func editorProcessKeypress() error {
 	case keyHome:
 		cfg.cx = 0
 	case keyEnd:
-		cfg.cx = cfg.screenCols - 1
+		if cfg.cy < len(cfg.rows) {
+			cfg.cx = len(cfg.rows[cfg.cy].chars)
+		}
 	}
 	return nil
 }
