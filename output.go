@@ -21,6 +21,7 @@ func editorRefreshScreen() {
 	fmt.Fprint(&ab, "\x1b[H")
 
 	editorDrawRows(&ab)
+	editorDrawStatusBar(&ab)
 
 	// reposition cursor
 	//fmt.Fprint(&ab, "\x1b[H")
@@ -66,6 +67,14 @@ func editorScroll() {
 	if cfg.rx >= cfg.colOffset+cfg.screenCols {
 		cfg.colOffset = cfg.rx - cfg.screenCols + 1
 	}
+}
+
+func editorDrawStatusBar(ab *bytes.Buffer) {
+	fmt.Fprint(ab, "\x1b[7m")
+	for j := 0; j < cfg.screenCols; j++ {
+		fmt.Fprint(ab, " ")
+	}
+	fmt.Fprint(ab, "\x1b[m")
 }
 
 func editorDrawRows(ab *bytes.Buffer) {
