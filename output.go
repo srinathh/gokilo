@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 )
 
 func editorRefreshScreen() {
@@ -22,6 +24,7 @@ func editorRefreshScreen() {
 
 	editorDrawRows(&ab)
 	editorDrawStatusBar(&ab)
+	editorDrawStatusMsg(&ab)
 
 	// reposition cursor
 	//fmt.Fprint(&ab, "\x1b[H")
@@ -76,18 +79,34 @@ func editorDrawStatusBar(ab *bytes.Buffer) {
 	if fileName == "" {
 		fileName = "No Name"
 	}
-	statusString := fmt.Sprintf("%.20s - %d lines", fileName, len(cfg.rows))
+	leftStatusString := fmt.Sprintf("%.20s - %d lines", fileName, len(cfg.rows))
+	rightStatusString := fmt.Sprintf("%d/%d", cfg.cy+1, len(cfg.rows))
+	numSpaces := cfg.screenCols - len(leftStatusString) - len(rightStatusString)
 
-	if len(statusString) > cfg.screenCols {
-		statusString = statusString[:cfg.screenCols]
+	if numSpaces >= 0 {
+		fmt.Fprint(ab, leftStatusString+strings.Repeat(" ", numSpaces)+rightStatusString)
+	} else {
+		fmt.Fprint(ab, (leftStatusString + rightStatusString)[:cfg.screenCols])
 	}
 
-	fmt.Fprint(ab, statusString)
-
-	for j := len(statusString); j < cfg.screenCols; j++ {
-		fmt.Fprint(ab, " ")
-	}
 	fmt.Fprint(ab, "\x1b[m")
+	fmt.Fprint(ab, "\r\n")
+}
+
+func editorSetStatusMsg(format string, a ...interface{}) {
+	cfg.statusMsg = fmt.Sprintf(format, a...)
+	cfg.statusMsgTime = time.Now()
+}
+
+func editorDrawStatusMsg(ab *bytes.Buffer) {
+	fmt.Fprint(ab, "\x1b[K") // clear the line
+	if time.Now().Sub(cfg.statusMsgTime).Seconds() < 5 {
+		if len(cfg.statusMsg) < cfg.screenCols {
+			fmt.Fprint(ab, cfg.statusMsg)
+		} else {
+			fmt.Fprint(ab, cfg.statusMsg[:cfg.screenCols])
+		}
+	}
 }
 
 func editorDrawRows(ab *bytes.Buffer) {
