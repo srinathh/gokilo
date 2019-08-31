@@ -30,16 +30,3 @@ func editorOpen(fileName string) error {
 	cfg.fileName = fileName
 	return nil
 }
-
-func editorUpdateRow(src []rune) []rune {
-	dest := []rune{}
-	for _, r := range src {
-		switch r {
-		case '\t':
-			dest = append(dest, tabSpaces...)
-		default:
-			dest = append(dest, r)
-		}
-	}
-	return dest
-}

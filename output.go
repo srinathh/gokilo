@@ -37,18 +37,6 @@ func editorRefreshScreen() {
 
 }
 
-func editorRowCxToRx(rowIdx, cx int) int {
-	rx := 0
-	for j := 0; j < cx; j++ {
-		if cfg.rows[rowIdx].chars[j] == '\t' {
-			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
-		}
-		rx++
-	}
-	return rx
-
-}
-
 func editorScroll() {
 	cfg.rx = 0
 	if cfg.cy < len(cfg.rows) {
