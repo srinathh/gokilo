@@ -25,10 +25,15 @@ func editorProcessKeypress() error {
 	case keyArrowDown, keyArrowLeft, keyArrowRight, keyArrowUp:
 		editorMoveCursor(b)
 	case keyPageUp:
+		cfg.cy = cfg.rowOffset
 		for j := 0; j < cfg.screenRows; j++ {
 			editorMoveCursor(keyArrowUp)
 		}
 	case keyPageDown:
+		cfg.cy = cfg.rowOffset + cfg.screenRows - 1
+		if cfg.cy > len(cfg.rows) {
+			cfg.cy = len(cfg.rows)
+		}
 		for j := 0; j < cfg.screenRows; j++ {
 			editorMoveCursor(keyArrowDown)
 		}
