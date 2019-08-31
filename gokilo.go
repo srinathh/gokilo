@@ -17,6 +17,7 @@ func initEditor() error {
 		return err
 	}
 	cfg.screenRows = rows
+	cfg.screenRows = cfg.screenRows - 1
 	cfg.screenCols = cols
 	return nil
 }

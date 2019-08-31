@@ -117,8 +117,6 @@ func editorDrawRows(ab *bytes.Buffer) {
 		// clear to end of line
 		fmt.Fprint(ab, "\x1b[K")
 
-		if y < cfg.screenRows-1 {
-			fmt.Fprint(ab, "\r\n")
-		}
+		fmt.Fprint(ab, "\r\n")
 	}
 }
