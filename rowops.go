@@ -24,3 +24,28 @@ func editorUpdateRow(src []rune) []rune {
 	}
 	return dest
 }
+
+//
+func editorRowInsertChar(rowidx, at, c int) {
+
+	// if at out of bounds, append to the end of the row
+	if at < 0 || at > len(cfg.rows[rowidx].chars) {
+		cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, rune(c))
+		return
+	}
+
+	// else insert without additonal allocation
+	cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, 0)
+	copy(cfg.rows[rowidx].chars[at+1:], cfg.rows[rowidx].chars[at:])
+	cfg.rows[rowidx].chars[at] = rune(c)
+
+}
+
+func editorInsertChar(c int) {
+	if cfg.cy == len(cfg.rows) {
+		cfg.rows = append(cfg.rows, newErow())
+	}
+	editorRowInsertChar(cfg.cy, cfg.cx, c)
+	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
+	cfg.cx++
+}

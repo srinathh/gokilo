@@ -43,6 +43,8 @@ func editorProcessKeypress() error {
 		if cfg.cy < len(cfg.rows) {
 			cfg.cx = len(cfg.rows[cfg.cy].chars)
 		}
+	default:
+		editorInsertChar(b)
 	}
 	return nil
 }

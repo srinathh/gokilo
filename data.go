@@ -12,6 +12,13 @@ type erow struct {
 	render []rune
 }
 
+func newErow() erow {
+	return erow{
+		[]rune{},
+		[]rune{},
+	}
+}
+
 type editorConfig struct {
 	cx, cy        int
 	rx            int
