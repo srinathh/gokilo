@@ -10,6 +10,7 @@ const (
 	keyHome       = 1006
 	keyEnd        = 1007
 	keyDelete     = 1008
+	keyBackSpace  = 127
 )
 
 func editorProcessKeypress() error {
@@ -20,6 +21,10 @@ func editorProcessKeypress() error {
 	}
 
 	switch b {
+	case '\r':
+		//tk
+		break
+
 	case ctrlKey('q'):
 		safeExit(nil)
 	case keyArrowDown, keyArrowLeft, keyArrowRight, keyArrowUp:
@@ -43,6 +48,11 @@ func editorProcessKeypress() error {
 		if cfg.cy < len(cfg.rows) {
 			cfg.cx = len(cfg.rows[cfg.cy].chars)
 		}
+	case keyBackSpace, ctrlKey('h'), keyDelete:
+		//tk
+		break
+	case ctrlKey('l'), '\x1b':
+		break
 	default:
 		editorInsertChar(b)
 	}
