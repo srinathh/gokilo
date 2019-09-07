@@ -32,10 +32,12 @@ type editorConfig struct {
 	statusMsg     string
 	statusMsgTime time.Time
 	dirty         bool
+	quitTimes     int
 }
 
 var cfg editorConfig
 
 const kiloTabStop = 4
+const kiloQuitTimes = 1
 
 var tabSpaces = []rune(strings.Repeat(" ", kiloTabStop))

@@ -26,6 +26,11 @@ func editorProcessKeypress() error {
 		break
 
 	case ctrlKey('q'):
+		if cfg.dirty && cfg.quitTimes > 0 {
+			editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", cfg.quitTimes)
+			cfg.quitTimes--
+			return nil
+		}
 		safeExit(nil)
 	case keyArrowDown, keyArrowLeft, keyArrowRight, keyArrowUp:
 		editorMoveCursor(b)
@@ -60,6 +65,7 @@ func editorProcessKeypress() error {
 	default:
 		editorInsertChar(b)
 	}
+	cfg.quitTimes = kiloQuitTimes
 	return nil
 }
 
