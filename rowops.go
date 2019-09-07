@@ -1,5 +1,15 @@
 package main
 
+func editorAppendRow(s string) {
+	rns := []rune(s)
+	row := erow{
+		chars:  rns,
+		render: editorUpdateRow(rns),
+	}
+	cfg.rows = append(cfg.rows, row)
+	cfg.dirty = true
+}
+
 func editorRowCxToRx(rowIdx, cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
@@ -38,6 +48,7 @@ func editorRowInsertChar(rowidx, at, c int) {
 	cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, 0)
 	copy(cfg.rows[rowidx].chars[at+1:], cfg.rows[rowidx].chars[at:])
 	cfg.rows[rowidx].chars[at] = rune(c)
+	cfg.dirty = true
 
 }
 

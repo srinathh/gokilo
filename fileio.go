@@ -19,17 +19,13 @@ func editorOpen(fileName string) error {
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		row := erow{
-			chars: []rune(scanner.Text()),
-		}
-		row.render = editorUpdateRow(row.chars)
-
-		cfg.rows = append(cfg.rows, row)
+		editorAppendRow(scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		return err
 	}
 	cfg.fileName = fileName
+	cfg.dirty = false
 	return nil
 }
 
@@ -66,5 +62,6 @@ func editorSave() {
 	}
 
 	editorSetStatusMsg("SAVED to file: %s", cfg.fileName)
+	cfg.dirty = false
 
 }

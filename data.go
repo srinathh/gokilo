@@ -31,6 +31,7 @@ type editorConfig struct {
 	fileName      string
 	statusMsg     string
 	statusMsgTime time.Time
+	dirty         bool
 }
 
 var cfg editorConfig

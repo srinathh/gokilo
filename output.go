@@ -67,7 +67,12 @@ func editorDrawStatusBar(ab *bytes.Buffer) {
 	if fileName == "" {
 		fileName = "No Name"
 	}
-	leftStatusString := fmt.Sprintf("%.20s - %d lines", fileName, len(cfg.rows))
+	dirtyChar := ' '
+	if cfg.dirty {
+		dirtyChar = '*'
+	}
+
+	leftStatusString := fmt.Sprintf("%c%.20s - %d lines", dirtyChar, fileName, len(cfg.rows))
 	rightStatusString := fmt.Sprintf("%d/%d", cfg.cy+1, len(cfg.rows))
 	numSpaces := cfg.screenCols - len(leftStatusString) - len(rightStatusString)
 
