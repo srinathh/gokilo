@@ -57,11 +57,17 @@ func editorProcessKeypress() error {
 		if cfg.cy < len(cfg.rows) {
 			cfg.cx = len(cfg.rows[cfg.cy].chars)
 		}
-	case keyBackSpace, ctrlKey('h'), keyDelete:
-		//tk
-		break
+
+	case keyBackSpace, ctrlKey('h'):
+		editorSetStatusMsg("backspace pressed")
+
+	case keyDelete:
+		editorMoveCursor(keyArrowRight)
+		editorDelChar()
+
 	case ctrlKey('l'), '\x1b':
-		break
+		editorSetStatusMsg("enter pressed")
+
 	default:
 		editorInsertChar(b)
 	}
