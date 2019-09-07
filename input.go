@@ -59,7 +59,7 @@ func editorProcessKeypress() error {
 		}
 
 	case keyBackSpace, ctrlKey('h'):
-		editorSetStatusMsg("backspace pressed")
+		editorDelChar()
 
 	case keyDelete:
 		editorMoveCursor(keyArrowRight)
