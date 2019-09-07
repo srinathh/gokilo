@@ -44,6 +44,10 @@ func editorProcessKeypress() error {
 		}
 	case keyHome:
 		cfg.cx = 0
+
+	case ctrlKey('s'):
+		editorSave()
+
 	case keyEnd:
 		if cfg.cy < len(cfg.rows) {
 			cfg.cx = len(cfg.rows[cfg.cy].chars)
