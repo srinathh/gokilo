@@ -45,6 +45,22 @@ func editorRowDelChar(rowidx, at int) {
 	cfg.dirty = true
 }
 
+func editorDelRow(rowidx int) {
+	if rowidx < 0 || rowidx >= len(cfg.rows) {
+		return
+	}
+
+	copy(cfg.rows[rowidx:], cfg.rows[rowidx+1:])
+	cfg.rows = cfg.rows[:len(cfg.rows)-1]
+	cfg.dirty = true
+}
+
+func editorRowAppendString(rowidx int, s []rune) {
+	cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, s...)
+	cfg.dirty = true
+	cfg.rows[rowidx].render = editorUpdateRow(cfg.rows[rowidx].chars)
+}
+
 //
 func editorRowInsertChar(rowidx, at, c int) {
 
@@ -62,4 +78,33 @@ func editorRowInsertChar(rowidx, at, c int) {
 	editorUpdateRow(cfg.rows[rowidx].chars)
 	cfg.dirty = true
 
+}
+
+func editorInsertChar(c int) {
+	if cfg.cy == len(cfg.rows) {
+		cfg.rows = append(cfg.rows, newErow())
+	}
+	editorRowInsertChar(cfg.cy, cfg.cx, c)
+	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
+	cfg.cx++
+}
+
+func editorDelChar() {
+	if cfg.cy == len(cfg.rows) {
+		return
+	}
+
+	if cfg.cx == 0 && cfg.cy == 0 {
+		return
+	}
+
+	if cfg.cx > 0 {
+		editorRowDelChar(cfg.cy, cfg.cx)
+		cfg.cx--
+	} else {
+		cfg.cx = len(cfg.rows[cfg.cy-1].chars)
+		editorRowAppendString(cfg.cy-1, cfg.rows[cfg.cy].chars)
+		editorDelRow(cfg.cy)
+		cfg.cy--
+	}
 }
