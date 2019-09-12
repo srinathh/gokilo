@@ -1,5 +1,6 @@
 package main
 
+// adding and updating rows
 func editorAppendRow(s string) {
 	rns := []rune(s)
 	row := erow{
@@ -8,18 +9,6 @@ func editorAppendRow(s string) {
 	}
 	cfg.rows = append(cfg.rows, row)
 	cfg.dirty = true
-}
-
-func editorRowCxToRx(rowIdx, cx int) int {
-	rx := 0
-	for j := 0; j < cx; j++ {
-		if cfg.rows[rowIdx].chars[j] == '\t' {
-			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
-		}
-		rx++
-	}
-	return rx
-
 }
 
 func editorUpdateRow(src []rune) []rune {
@@ -35,12 +24,52 @@ func editorUpdateRow(src []rune) []rune {
 	return dest
 }
 
+// editorRowCxToRx transforms cursor positions to account for tab stops
+func editorRowCxToRx(rowIdx, cx int) int {
+	rx := 0
+	for j := 0; j < cx; j++ {
+		if cfg.rows[rowIdx].chars[j] == '\t' {
+			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
+		}
+		rx++
+	}
+	return rx
+
+}
+
+// Delete operations
+
+func editorDelChar() {
+	// if the cursor is in the empty line at the end, do nothing (why?)
+	if cfg.cy == len(cfg.rows) {
+		return
+	}
+
+	// if at the beginning of the text, then do nothing
+	if cfg.cx == 0 && cfg.cy == 0 {
+		return
+	}
+
+	// different handling for at the beginning of the line or middle of line
+	if cfg.cx > 0 {
+		editorRowDelChar(cfg.cy, cfg.cx-1)
+		cfg.cx--
+	} else {
+		cfg.cx = len(cfg.rows[cfg.cy-1].chars)
+		editorRowAppendString(cfg.cy-1, cfg.rows[cfg.cy].chars)
+		editorDelRow(cfg.cy)
+		cfg.cy--
+	}
+}
+
 func editorRowDelChar(rowidx, at int) {
 	if at < 0 || at >= len(cfg.rows[rowidx].chars) {
 		return
 	}
+
 	copy(cfg.rows[rowidx].chars[at:], cfg.rows[rowidx].chars[at+1:])
 	cfg.rows[rowidx].chars = cfg.rows[rowidx].chars[:len(cfg.rows[rowidx].chars)-1]
+
 	cfg.rows[rowidx].render = editorUpdateRow(cfg.rows[rowidx].chars)
 	cfg.dirty = true
 }
@@ -61,7 +90,8 @@ func editorRowAppendString(rowidx int, s []rune) {
 	cfg.rows[rowidx].render = editorUpdateRow(cfg.rows[rowidx].chars)
 }
 
-//
+// Insert Operations
+
 func editorRowInsertChar(rowidx, at, c int) {
 
 	// if at out of bounds, append to the end of the row
@@ -87,24 +117,4 @@ func editorInsertChar(c int) {
 	editorRowInsertChar(cfg.cy, cfg.cx, c)
 	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
 	cfg.cx++
-}
-
-func editorDelChar() {
-	if cfg.cy == len(cfg.rows) {
-		return
-	}
-
-	if cfg.cx == 0 && cfg.cy == 0 {
-		return
-	}
-
-	if cfg.cx > 0 {
-		editorRowDelChar(cfg.cy, cfg.cx)
-		cfg.cx--
-	} else {
-		cfg.cx = len(cfg.rows[cfg.cy-1].chars)
-		editorRowAppendString(cfg.cy-1, cfg.rows[cfg.cy].chars)
-		editorDelRow(cfg.cy)
-		cfg.cy--
-	}
 }
