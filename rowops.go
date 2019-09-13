@@ -144,7 +144,7 @@ func editorRowInsertChar(rowidx, at, c int) {
 
 	tmp := append(cfg.rows[rowidx].chars[:at], rune(c))
 	if at < len(cfg.rows[rowidx].chars) {
-		tmp = append(tmp, cfg.rows[rowidx].chars[at+1:]...)
+		tmp = append(tmp, cfg.rows[rowidx].chars[at:]...)
 	}
 	cfg.rows[rowidx].chars = tmp
 
