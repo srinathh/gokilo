@@ -21,8 +21,8 @@ func editorProcessKeypress() error {
 	}
 
 	switch b {
-	case '\r':
-		//tk
+	case '\r': //, ctrlKey('l'), '\x1b':
+		editorInsertNewline()
 		break
 
 	case ctrlKey('q'):
@@ -64,9 +64,6 @@ func editorProcessKeypress() error {
 	case keyDelete:
 		editorMoveCursor(keyArrowRight)
 		editorDelChar()
-
-	case ctrlKey('l'), '\x1b':
-		editorSetStatusMsg("enter pressed")
 
 	default:
 		editorInsertChar(b)

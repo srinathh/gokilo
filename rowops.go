@@ -139,3 +139,16 @@ func editorInsertRow(rowidx int, s string) {
 	cfg.dirty = true
 
 }
+
+func editorInsertNewline() {
+	if cfg.cx == 0 {
+		editorInsertRow(cfg.cy, "")
+		return
+	}
+
+	editorInsertRow(cfg.cy+1, string(cfg.rows[cfg.cy].chars[cfg.cx:]))
+	cfg.rows[cfg.cy].chars = cfg.rows[cfg.cy].chars[:cfg.cx]
+	editorUpdateRow(cfg.rows[cfg.cy].chars)
+	cfg.cy++
+	cfg.cx = 0
+}
