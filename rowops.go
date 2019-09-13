@@ -1,39 +1,5 @@
 package main
 
-// adding and updating rows
-func editorAppendRow(s string) {
-	rns := []rune(s)
-	row := erow{
-		chars:  rns,
-		render: editorUpdateRow(rns),
-	}
-	cfg.rows = append(cfg.rows, row)
-	cfg.dirty = true
-}
-
-/*
-func editorInsertRow(rowidx int, s string) {
-	if rowidx < 0 || rowidx > len(cfg.rows) {
-		return
-	}
-
-	rns := []rune(s)
-	row := erow{
-		chars:  rns,
-		render: editorUpdateRow(rns),
-	}
-
-	tmp := append(cfg.rows[:rowidx], row)
-	if rowidx < len(cfg.rows) {
-		tmp = append(tmp, cfg.rows[rowidx:]...)
-	}
-	cfg.rows = tmp
-
-	cfg.dirty = true
-
-}
-*/
-
 func editorUpdateRow(src []rune) []rune {
 	dest := []rune{}
 	for _, r := range src {
@@ -115,28 +81,7 @@ func editorRowAppendString(rowidx int, s []rune) {
 
 // Insert Operations
 
-/*
 func editorRowInsertChar(rowidx, at, c int) {
-
-	// if at out of bounds, append to the end of the row
-	if at < 0 || at > len(cfg.rows[rowidx].chars) {
-		cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, rune(c))
-		editorUpdateRow(cfg.rows[rowidx].chars)
-		return
-	}
-
-	// else insert without additonal allocation
-	cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, 0)
-	copy(cfg.rows[rowidx].chars[at+1:], cfg.rows[rowidx].chars[at:])
-	cfg.rows[rowidx].chars[at] = rune(c)
-	editorUpdateRow(cfg.rows[rowidx].chars)
-	cfg.dirty = true
-
-}
-*/
-
-func editorRowInsertChar(rowidx, at, c int) {
-
 	// if at out of bounds, append to the end of the row
 	if at < 0 || at > len(cfg.rows[rowidx].chars) {
 		return
@@ -154,9 +99,43 @@ func editorRowInsertChar(rowidx, at, c int) {
 
 func editorInsertChar(c int) {
 	if cfg.cy == len(cfg.rows) {
-		cfg.rows = append(cfg.rows, newErow())
+		editorInsertRow(len(cfg.rows), "")
 	}
 	editorRowInsertChar(cfg.cy, cfg.cx, c)
 	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
 	cfg.cx++
+}
+
+/*
+// adding and updating rows
+func editorAppendRow(s string) {
+	rns := []rune(s)
+	row := erow{
+		chars:  rns,
+		render: editorUpdateRow(rns),
+	}
+	cfg.rows = append(cfg.rows, row)
+	cfg.dirty = true
+}
+*/
+
+func editorInsertRow(rowidx int, s string) {
+	if rowidx < 0 || rowidx > len(cfg.rows) {
+		return
+	}
+
+	rns := []rune(s)
+	row := erow{
+		chars:  rns,
+		render: editorUpdateRow(rns),
+	}
+
+	tmp := append(cfg.rows[:rowidx], row)
+	if rowidx < len(cfg.rows) {
+		tmp = append(tmp, cfg.rows[rowidx:]...)
+	}
+	cfg.rows = tmp
+
+	cfg.dirty = true
+
 }

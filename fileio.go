@@ -19,7 +19,8 @@ func editorOpen(fileName string) error {
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		editorAppendRow(scanner.Text())
+		//editorAppendRow(scanner.Text())
+		editorInsertRow(len(cfg.rows), scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		return err
