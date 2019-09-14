@@ -133,6 +133,23 @@ func editorAppendRow(s string) {
 }
 */
 
+func editorInsertNewline() {
+	if cfg.cx == 0 {
+		editorInsertRow(cfg.cy, "")
+		return
+	}
+
+	moveChars := string(cfg.rows[cfg.cy].chars[cfg.cx:])
+
+	cfg.rows[cfg.cy].chars = cfg.rows[cfg.cy].chars[:cfg.cx]
+	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
+
+	editorInsertRow(cfg.cy+1, moveChars)
+
+	cfg.cy++
+	cfg.cx = 0
+}
+
 func editorInsertRow(rowidx int, s string) {
 	if rowidx < 0 || rowidx > len(cfg.rows) {
 		return
@@ -144,30 +161,9 @@ func editorInsertRow(rowidx int, s string) {
 		render: editorUpdateRow(rns),
 	}
 
-	tmp := append(cfg.rows[:rowidx], row)
-	if rowidx < len(cfg.rows) {
-		tmp = append(tmp, cfg.rows[rowidx:]...)
-	}
-	cfg.rows = tmp
+	cfg.rows = append(cfg.rows, erow{})
+	copy(cfg.rows[rowidx+1:], cfg.rows[rowidx:])
+	cfg.rows[rowidx] = row
 
 	cfg.dirty = true
-
-}
-
-func editorInsertNewline() {
-	if cfg.cx == 0 {
-		editorInsertRow(cfg.cy, "")
-		return
-	}
-
-	moveChars := string(cfg.rows[cfg.cy].chars[cfg.cx:])
-	editorSetStatusMsg(moveChars)
-
-	cfg.rows[cfg.cy].chars = cfg.rows[cfg.cy].chars[:cfg.cx]
-	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
-
-	editorInsertRow(cfg.cy+1, moveChars)
-
-	cfg.cy++
-	cfg.cx = 0
 }
