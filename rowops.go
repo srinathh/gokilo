@@ -46,7 +46,8 @@ func editorDelChar() {
 		cfg.cx--
 	} else {
 		cfg.cx = len(cfg.rows[cfg.cy-1].chars)
-		editorRowAppendString(cfg.cy-1, cfg.rows[cfg.cy].chars)
+		cfg.rows[cfg.cy-1].chars = append(cfg.rows[cfg.cy-1].chars, cfg.rows[cfg.cy].chars...)
+		cfg.rows[cfg.cy-1].render = editorUpdateRow(cfg.rows[cfg.cy-1].chars)
 		editorDelRow(cfg.cy)
 		cfg.cy--
 	}
@@ -87,11 +88,13 @@ func editorDelRow(rowidx int) {
 	cfg.dirty = true
 }
 
+/*
 func editorRowAppendString(rowidx int, s []rune) {
 	cfg.rows[rowidx].chars = append(cfg.rows[rowidx].chars, s...)
 	cfg.dirty = true
 	cfg.rows[rowidx].render = editorUpdateRow(cfg.rows[rowidx].chars)
 }
+*/
 
 // Insert Operations
 func editorRowInsertChar(row []rune, at, c int) []rune {
