@@ -21,8 +21,11 @@ func editorProcessKeypress() error {
 	}
 
 	switch b {
-	case '\r': //, ctrlKey('l'), '\x1b':
+	case '\r':
 		editorInsertNewline()
+		break
+
+	case ctrlKey('l'), '\x1b':
 		break
 
 	case ctrlKey('q'):
