@@ -14,10 +14,10 @@ func editorUpdateRow(src []rune) []rune {
 }
 
 // editorRowCxToRx transforms cursor positions to account for tab stops
-func editorRowCxToRx(rowIdx, cx int) int {
+func editorRowCxToRx(row []rune, cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
-		if cfg.rows[rowIdx].chars[j] == '\t' {
+		if row[j] == '\t' {
 			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
 		}
 		rx++

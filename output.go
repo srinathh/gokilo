@@ -40,7 +40,7 @@ func editorRefreshScreen() {
 func editorScroll() {
 	cfg.rx = 0
 	if cfg.cy < len(cfg.rows) {
-		cfg.rx = editorRowCxToRx(cfg.cy, cfg.cx)
+		cfg.rx = editorRowCxToRx(cfg.rows[cfg.cy].chars, cfg.cx)
 	}
 
 	if cfg.cy < cfg.rowOffset {
