@@ -81,79 +81,81 @@ func rawReadKey() (byte, error) {
 	}
 }
 
-func editorReadKey() (int, error) {
+func editorReadKey() int {
 
 	for {
 		key, err := rawReadKey()
 		switch {
 		case err == errNoInput:
 			continue
+		case err == io.EOF:
+			safeExit(nil)
 		case err != nil:
-			return 0, err
+			safeExit(fmt.Errorf("Error reading key from STDIN: %s", err))
 		case key == '\x1b':
 			esc0, err := rawReadKey()
 			if err == errNoInput {
-				return '\x1b', nil
+				return '\x1b'
 			}
 			if err != nil {
-				return 0, err
+				return 0
 			}
 			esc1, err := rawReadKey()
 			if err == errNoInput {
-				return '\x1b', nil
+				return '\x1b'
 			}
 			if err != nil {
-				return 0, err
+				return 0
 			}
 
 			if esc0 == '[' {
 				if esc1 >= '0' && esc1 <= '9' {
 					esc2, err := rawReadKey()
 					if err == errNoInput {
-						return '\x1b', nil
+						return '\x1b'
 					}
 					if esc2 == '~' {
 						switch esc1 {
 						case '5':
-							return keyPageUp, nil
+							return keyPageUp
 						case '6':
-							return keyPageDown, nil
+							return keyPageDown
 						case '1', '7':
-							return keyHome, nil
+							return keyHome
 						case '4', '8':
-							return keyEnd, nil
+							return keyEnd
 						case '3':
-							return keyDelete, nil
+							return keyDelete
 						}
 					}
 
 				} else {
 					switch esc1 {
 					case 'A':
-						return keyArrowUp, nil
+						return keyArrowUp
 					case 'B':
-						return keyArrowDown, nil
+						return keyArrowDown
 					case 'C':
-						return keyArrowRight, nil
+						return keyArrowRight
 					case 'D':
-						return keyArrowLeft, nil
+						return keyArrowLeft
 					case 'H':
-						return keyHome, nil
+						return keyHome
 					case 'F':
-						return keyEnd, nil
+						return keyEnd
 					}
 				}
 			} else if esc0 == 'O' {
 				switch esc1 {
 				case 'H':
-					return keyHome, nil
+					return keyHome
 				case 'F':
-					return keyEnd, nil
+					return keyEnd
 				}
 			}
 
 		default:
-			return int(key), nil
+			return int(key)
 		}
 	}
 }

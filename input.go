@@ -15,10 +15,7 @@ const (
 
 func editorProcessKeypress() error {
 
-	b, err := editorReadKey()
-	if err != nil {
-		return err
-	}
+	b := editorReadKey()
 
 	switch b {
 	case '\r':
