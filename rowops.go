@@ -131,3 +131,33 @@ func editorInsertRow(rowidx int, s string) {
 
 	cfg.dirty = true
 }
+
+func editorPrompt(prompt string) string {
+
+	buf := ""
+
+	for {
+		editorSetStatusMsg(prompt, buf)
+		editorRefreshScreen()
+
+		c := editorReadKey()
+		switch c {
+		case keyDelete, keyBackSpace, ctrlKey('h'):
+			if len(buf) > 0 {
+				buf = buf[:len(buf)-1]
+			}
+		case '\x1b':
+			editorSetStatusMsg("")
+			return ""
+		case '\r':
+			if len(buf) != 0 {
+				editorSetStatusMsg("")
+				return buf
+			}
+		default:
+			if c != ctrlKey('c') && c < 128 {
+				buf = buf + string(c)
+			}
+		}
+	}
+}
