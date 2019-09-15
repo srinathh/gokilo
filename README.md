@@ -19,3 +19,7 @@ Limitations
   `syscall.IoctlSetTermios` function call in `terminal.go` to enter and leave
   raw mode in the terminal. I will research a windows version in the future but
   pull requests welcome
+
+Building
+--------
+`go build` 
