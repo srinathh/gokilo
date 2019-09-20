@@ -1,6 +1,9 @@
 package main
 
-import "os"
+import (
+	"internal/runes"
+	"os"
+)
 
 // golang syscall main package is deprecated and
 // points to sys/<os> packages to be used instead
@@ -41,6 +44,7 @@ func main() {
 	}
 
 	for {
+		editorSetStatusMsg(runes.Dummy())
 		editorRefreshScreen()
 		if err := editorProcessKeypress(); err != nil {
 			safeExit(err)
