@@ -21,3 +21,21 @@ func TestEqual(t *testing.T) {
 		}
 	}
 }
+
+func TestIndex(t *testing.T) {
+	testCases := []struct {
+		S    []rune
+		Sub  []rune
+		Want int
+	}{
+		{[]rune("abc"), []rune("b"), 1},
+		{[]rune("abc"), []rune("d"), -1},
+		{[]rune("abc def ghi"), []rune("de"), 4},
+	}
+
+	for _, testCase := range testCases {
+		if Index(testCase.S, testCase.Sub) != testCase.Want {
+			t.Errorf("Mismatch: %s:%s", string(testCase.S), string(testCase.Sub))
+		}
+	}
+}

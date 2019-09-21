@@ -1,4 +1,4 @@
-module github.com/srinathh/gokilo
+module gokilo
 
 go 1.12
 

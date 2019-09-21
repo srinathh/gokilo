@@ -1,12 +1,8 @@
 package main
 
 import (
-	"internal/runes"
 	"os"
 )
-
-// golang syscall main package is deprecated and
-// points to sys/<os> packages to be used instead
 
 const kiloVersion = "0.0.1"
 
@@ -44,7 +40,6 @@ func main() {
 	}
 
 	for {
-		editorSetStatusMsg(runes.Dummy())
 		editorRefreshScreen()
 		if err := editorProcessKeypress(); err != nil {
 			safeExit(err)
