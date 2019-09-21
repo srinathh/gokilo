@@ -53,6 +53,9 @@ func editorProcessKeypress() error {
 	case ctrlKey('s'):
 		editorSave()
 
+	case ctrlKey('f'):
+		editorFind()
+
 	case keyEnd:
 		if cfg.cy < len(cfg.rows) {
 			cfg.cx = len(cfg.rows[cfg.cy].chars)
