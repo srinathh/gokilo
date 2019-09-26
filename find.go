@@ -5,14 +5,41 @@ import (
 )
 
 func editorFindCallback(query string, key int) {
-	if key == '\r' || key == '\x1b' {
+	switch key {
+	case '\r', '\x1b':
+		cfg.lastMatch = -1
+		cfg.direction = 1
 		return
+
+	case keyArrowRight, keyArrowDown:
+		cfg.direction = 1
+	case keyArrowLeft, keyArrowUp:
+		cfg.direction = -1
+	default:
+		cfg.lastMatch = -1
+		cfg.direction = 1
 	}
 
-	for i, row := range cfg.rows {
+	if cfg.lastMatch == -1 {
+		cfg.direction = 1
+	}
+
+	current := cfg.lastMatch
+
+	for i := 0; i < len(cfg.rows); i++ {
+
+		current = current + cfg.direction
+		if current == -1 {
+			current = len(cfg.rows) - 1
+		} else if current == len(cfg.rows) {
+			current = 0
+		}
+
+		row := cfg.rows[current]
 
 		if idx := runes.Index(row.chars, []rune(query)); idx != -1 {
-			cfg.cy = i
+			cfg.lastMatch = current
+			cfg.cy = current
 			cfg.cx = idx
 			cfg.rowOffset = len(cfg.rows)
 			break
@@ -28,7 +55,7 @@ func editorFind() {
 	savedColOffset := cfg.colOffset
 	savedRowOffset := cfg.rowOffset
 
-	query := editorPrompt("Search (ESC to cancel): %s", editorFindCallback)
+	query := editorPrompt("Search (use ESC/ARROWS/ENTER): %s", editorFindCallback)
 
 	if query == "" {
 		cfg.cx = savedCx

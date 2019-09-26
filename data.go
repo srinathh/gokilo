@@ -33,6 +33,8 @@ type editorConfig struct {
 	statusMsgTime time.Time
 	dirty         bool
 	quitTimes     int
+	lastMatch     int
+	direction     int
 }
 
 var cfg editorConfig
