@@ -17,6 +17,7 @@ func editorFind() {
 			cfg.cy = i
 			cfg.cx = idx
 			cfg.rowOffset = len(cfg.rows)
+			break
 		}
 
 	}

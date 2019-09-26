@@ -19,7 +19,7 @@ func initEditor() error {
 	cfg.screenRows = cfg.screenRows - 2
 	cfg.screenCols = cols
 	cfg.quitTimes = kiloQuitTimes
-	editorSetStatusMsg("HELP: Ctrl + S to save | Ctrl + Q to exit")
+	editorSetStatusMsg("HELP: Ctrl + S to save | Ctrl + Q to exit | Ctrl + F to find")
 	return nil
 }
 
