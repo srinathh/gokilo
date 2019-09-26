@@ -42,7 +42,7 @@ func editorRowsToString() string {
 
 func editorSave() {
 	if cfg.fileName == "" {
-		cfg.fileName = editorPrompt("Save as: %s")
+		cfg.fileName = editorPrompt("Save as: %s", nil)
 		if cfg.fileName == "" {
 			editorSetStatusMsg("Save aborted!")
 			return

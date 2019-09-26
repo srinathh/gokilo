@@ -120,3 +120,44 @@ func editorMoveCursor(key int) {
 		cfg.cx = rowLen
 	}
 }
+
+type editorPromptCallback func(string, int)
+
+func editorPrompt(prompt string, callback editorPromptCallback) string {
+
+	buf := ""
+
+	for {
+		editorSetStatusMsg(prompt, buf)
+		editorRefreshScreen()
+
+		c := editorReadKey()
+		switch c {
+		case keyDelete, keyBackSpace, ctrlKey('h'):
+			if len(buf) > 0 {
+				buf = buf[:len(buf)-1]
+			}
+		case '\x1b':
+			editorSetStatusMsg("")
+			if callback != nil {
+				callback(buf, c)
+			}
+			return ""
+		case '\r':
+			if len(buf) != 0 {
+				editorSetStatusMsg("")
+				if callback != nil {
+					callback(buf, c)
+				}
+				return buf
+			}
+		default:
+			if c != ctrlKey('c') && c < 128 {
+				buf = buf + string(c)
+			}
+			if callback != nil {
+				callback(buf, c)
+			}
+		}
+	}
+}

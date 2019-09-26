@@ -4,10 +4,8 @@ import (
 	"gokilo/internal/runes"
 )
 
-func editorFind() {
-	query := editorPrompt("Search (ESC to cancel): %s")
-
-	if query == "" {
+func editorFindCallback(query string, key int) {
+	if key == '\r' || key == '\x1b' {
 		return
 	}
 
@@ -21,4 +19,22 @@ func editorFind() {
 		}
 
 	}
+}
+
+func editorFind() {
+
+	savedCx := cfg.cx
+	savedCy := cfg.cy
+	savedColOffset := cfg.colOffset
+	savedRowOffset := cfg.rowOffset
+
+	query := editorPrompt("Search (ESC to cancel): %s", editorFindCallback)
+
+	if query == "" {
+		cfg.cx = savedCx
+		cfg.cy = savedCy
+		cfg.colOffset = savedColOffset
+		cfg.rowOffset = savedRowOffset
+	}
+
 }
