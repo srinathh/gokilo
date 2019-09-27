@@ -33,7 +33,7 @@ func enableRawMode() error {
 		return err
 	}
 
-	cfg.origTermios = *termios
+	cfg.origTermCfg = *termios
 
 	// turn off echo & canonical mode by using a bitwise clear operator &^
 	termios.Lflag = termios.Lflag &^ (unix.ECHO | unix.ICANON | unix.ISIG | unix.IEXTEN)
@@ -53,7 +53,8 @@ func enableRawMode() error {
 }
 
 func disableRawMode() error {
-	if err := unix.IoctlSetTermios(unix.Stdin, unix.TCSETSF, &cfg.origTermios); err != nil {
+	termios := cfg.origTermCfg.(unix.Termios)
+	if err := unix.IoctlSetTermios(unix.Stdin, unix.TCSETSF, &termios); err != nil {
 		return err
 	}
 	return nil
