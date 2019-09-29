@@ -23,7 +23,7 @@ func getWindowSize() (int, int, error) {
 func enableRawMode() error {
 
 	var inSettings uint32 = windows.ENABLE_EXTENDED_FLAGS | windows.ENABLE_VIRTUAL_TERMINAL_INPUT
-	var outSettings uint32 = windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING | windows.ENABLE_PROCESSED_OUTPUT
+	var outSettings uint32 = windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING | windows.ENABLE_PROCESSED_OUTPUT| windows.DISABLE_NEWLINE_AUTO_RETURN
 
 	if err := windows.SetConsoleMode(windows.Stdin, inSettings); err != nil {
 		return fmt.Errorf("error setting Raw mode: %s", err)

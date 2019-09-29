@@ -55,7 +55,7 @@ func editorReadKey() int {
 			safeExit(fmt.Errorf("Error reading key from STDIN: %s", err))
 		case key == '\x1b':
 			esc0, err := rawReadKey()
-			if err == errNoInput {
+			if err == errNoInput || esc0 == '\x1b' {
 				return '\x1b'
 			}
 			if err != nil {
