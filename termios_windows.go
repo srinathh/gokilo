@@ -16,7 +16,7 @@ func getWindowSize() (int, int, error) {
 		return 0, 0, fmt.Errorf("error fetching Screen SIze: %s", err)
 	}
 
-	return int(info.Size.Y), int(info.Size.X), nil
+	return int(info.Window.Bottom - info.Window.Top + 1), int(info.Window.Right - info.Window.Left + 1), nil
 
 }
 
