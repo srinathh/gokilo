@@ -1,5 +1,7 @@
 package runes
 
+import "unicode"
+
 // IndexRune returns the index of the first instance of the Unicode code point
 // r, or -1 if rune is not present in s.
 func IndexRune(s []rune, c rune) int {
@@ -90,3 +92,24 @@ func hashStr(sep []rune) (uint32, uint32) {
 	}
 	return hash, pow
 }
+
+// Map returns a copy of the rune slice s with all its characters modified
+// according to the mapping function. If mapping returns a negative value, the character is
+// dropped from the byte slice with no replacement. The characters in s and the
+// output are interpreted as UTF-8-encoded code points.
+func Map(mapping func(r rune) rune, s []rune) []rune {
+	ret := make([]rune, len(s))
+	for j, r := range s {
+		ret[j] = mapping(r)
+	}
+	return ret
+}
+
+// ToLower returns a copy of the rune slice s with all Unicode letters mapped to their lower case.
+func ToLower(s []rune) []rune { return Map(unicode.ToLower, s) }
+
+// ToUpper returns a copy of the rune slice s with all Unicode letters mapped to their lower case.
+func ToUpper(s []rune) []rune { return Map(unicode.ToUpper, s) }
+
+// ToTitle treats s as UTF-8-encoded bytes and returns a copy with all the Unicode letters mapped to their title case.
+func ToTitle(s []rune) []rune { return Map(unicode.ToTitle, s) }

@@ -37,7 +37,7 @@ func editorFindCallback(query string, key int) {
 
 		row := cfg.rows[current]
 
-		if idx := runes.Index(row.chars, []rune(query)); idx != -1 {
+		if idx := runes.Index(runes.ToLower(row.chars), runes.ToLower([]rune(query))); idx != -1 {
 			cfg.lastMatch = current
 			cfg.cy = current
 			cfg.cx = idx
