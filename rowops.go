@@ -1,20 +1,5 @@
 package main
 
-/*
-func editorUpdateRow(src []rune) []rune {
-	dest := []rune{}
-	for _, r := range src {
-		switch r {
-		case '\t':
-			dest = append(dest, tabSpaces...)
-		default:
-			dest = append(dest, r)
-		}
-	}
-	return dest
-}
-*/
-
 // editorRowCxToRx transforms cursor positions to account for tab stops
 func editorRowCxToRx(row erow, cx int) int {
 	rx := 0

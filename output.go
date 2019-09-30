@@ -16,9 +16,6 @@ func editorRefreshScreen() {
 	// hide cursor
 	fmt.Fprint(&ab, "\x1b[?25l")
 
-	// clear screen
-	// fmt.Fprint(&ab, "\x1b[2J")
-
 	// move cursor to top left
 	fmt.Fprint(&ab, "\x1b[H")
 
@@ -27,7 +24,6 @@ func editorRefreshScreen() {
 	editorDrawStatusMsg(&ab)
 
 	// reposition cursor
-	//fmt.Fprint(&ab, "\x1b[H")
 	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.rx-cfg.colOffset+1)
 
 	// show cursor

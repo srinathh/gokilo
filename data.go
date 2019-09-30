@@ -20,29 +20,14 @@ func (src erow) Text() []rune {
 	return dest
 }
 
-/*
-type erow struct {
-	chars  []rune
-	render []rune
-}
-
-func newErow() erow {
-	return erow{
-		[]rune{},
-		[]rune{},
-	}
-}
-*/
-
 type editorConfig struct {
-	cx, cy     int
-	rx         int
-	screenRows int
-	screenCols int
-	rows       []erow
-	rowOffset  int
-	colOffset  int
-	//origTermios   syscall.Termios
+	cx, cy        int
+	rx            int
+	screenRows    int
+	screenCols    int
+	rows          []erow
+	rowOffset     int
+	colOffset     int
 	origTermCfg   interface{}
 	fileName      string
 	statusMsg     string
