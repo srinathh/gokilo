@@ -15,25 +15,25 @@ func editorOpen(fileName string) error {
 	}
 	defer r.Close()
 
-	cfg.rows = []erow{}
+	editor.Rows = []erow{}
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		//editorAppendRow(scanner.Text())
-		editorInsertRow(len(cfg.rows), scanner.Text())
+		editor.InsertRow(len(editor.Rows), scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	cfg.fileName = fileName
-	cfg.dirty = false
+	editor.FileName = fileName
+	editor.Dirty = false
 	return nil
 }
 
 func editorRowsToString() string {
 	var sb strings.Builder
 
-	for _, rows := range cfg.rows {
+	for _, rows := range editor.Rows {
 		sb.WriteString(string(rows))
 		sb.WriteByte('\n')
 	}
