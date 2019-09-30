@@ -5,25 +5,14 @@ import (
 	"time"
 )
 
-type editorConfig struct {
-	cx, cy        int
-	rx            int
-	screenRows    int
-	screenCols    int
-	rows          []erow
-	rowOffset     int
-	colOffset     int
-	origTermCfg   interface{}
-	fileName      string
-	statusMsg     string
-	statusMsgTime time.Time
-	dirty         bool
-	quitTimes     int
-	lastMatch     int
-	direction     int
+// Config collects configuraiton params frot he app
+type Config struct {
+	ScreenRows    int
+	ScreenCols    int
+	OrigTermCfg   interface{}
+	StatusMsg     string
+	StatusMsgTime time.Time
 }
-
-var cfg editorConfig
 
 const kiloTabStop = 4
 const kiloQuitTimes = 1

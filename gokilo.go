@@ -6,6 +6,9 @@ import (
 
 const kiloVersion = "0.0.1"
 
+var cfg Config
+var editor Editor
+
 func ctrlKey(b byte) int {
 	return int(b & 0x1f)
 }
@@ -15,12 +18,12 @@ func initEditor() error {
 	if err != nil {
 		return err
 	}
-	cfg.screenRows = rows
-	cfg.screenRows = cfg.screenRows - 2
-	cfg.screenCols = cols
-	cfg.quitTimes = kiloQuitTimes
-	cfg.lastMatch = -1
-	cfg.direction = 1
+	cfg.ScreenRows = rows
+	cfg.ScreenRows = cfg.ScreenRows - 2
+	cfg.ScreenCols = cols
+	editor.QuitTimes = kiloQuitTimes
+	editor.LastMatch = -1
+	editor.Direction = 1
 	editorSetStatusMsg("HELP: Ctrl + S to save | Ctrl + Q to exit | Ctrl + F to find")
 	return nil
 }
