@@ -34,7 +34,7 @@ func editorRowsToString() string {
 	var sb strings.Builder
 
 	for _, rows := range cfg.rows {
-		sb.WriteString(string(rows.chars))
+		sb.WriteString(string(rows))
 		sb.WriteByte('\n')
 	}
 	return sb.String()

@@ -58,7 +58,7 @@ func editorProcessKeypress() error {
 
 	case keyEnd:
 		if cfg.cy < len(cfg.rows) {
-			cfg.cx = len(cfg.rows[cfg.cy].chars)
+			cfg.cx = len(cfg.rows[cfg.cy])
 		}
 
 	case keyBackSpace, ctrlKey('h'):
@@ -85,15 +85,15 @@ func editorMoveCursor(key int) {
 			cfg.cx--
 		} else if cfg.cy > 0 {
 			cfg.cy--
-			cfg.cx = len(cfg.rows[cfg.cy].chars)
+			cfg.cx = len(cfg.rows[cfg.cy])
 		}
 	case keyArrowRight:
 		// right moves only if we're within a valid line.
 		// for past EOF, there's no movement
 		if !pastEOF {
-			if cfg.cx < len(cfg.rows[cfg.cy].chars) {
+			if cfg.cx < len(cfg.rows[cfg.cy]) {
 				cfg.cx++
-			} else if cfg.cx == len(cfg.rows[cfg.cy].chars) {
+			} else if cfg.cx == len(cfg.rows[cfg.cy]) {
 				cfg.cy++
 				cfg.cx = 0
 			}
@@ -113,7 +113,7 @@ func editorMoveCursor(key int) {
 
 	rowLen := 0
 	if !pastEOF {
-		rowLen = len(cfg.rows[cfg.cy].chars)
+		rowLen = len(cfg.rows[cfg.cy])
 	}
 
 	if cfg.cx > rowLen {

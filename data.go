@@ -5,6 +5,22 @@ import (
 	"time"
 )
 
+type erow []rune
+
+func (src erow) Text() []rune {
+	dest := []rune{}
+	for _, r := range src {
+		switch r {
+		case '\t':
+			dest = append(dest, tabSpaces...)
+		default:
+			dest = append(dest, r)
+		}
+	}
+	return dest
+}
+
+/*
 type erow struct {
 	chars  []rune
 	render []rune
@@ -16,6 +32,7 @@ func newErow() erow {
 		[]rune{},
 	}
 }
+*/
 
 type editorConfig struct {
 	cx, cy     int

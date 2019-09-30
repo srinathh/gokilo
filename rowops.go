@@ -1,5 +1,6 @@
 package main
 
+/*
 func editorUpdateRow(src []rune) []rune {
 	dest := []rune{}
 	for _, r := range src {
@@ -12,9 +13,10 @@ func editorUpdateRow(src []rune) []rune {
 	}
 	return dest
 }
+*/
 
 // editorRowCxToRx transforms cursor positions to account for tab stops
-func editorRowCxToRx(row []rune, cx int) int {
+func editorRowCxToRx(row erow, cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
 		if row[j] == '\t' {
@@ -41,13 +43,11 @@ func editorDelChar() {
 
 	// different handling for at the beginning of the line or middle of line
 	if cfg.cx > 0 {
-		cfg.rows[cfg.cy].chars = editorRowDelChar(cfg.rows[cfg.cy].chars, cfg.cx-1)
-		cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
+		cfg.rows[cfg.cy] = editorRowDelChar(cfg.rows[cfg.cy], cfg.cx-1)
 		cfg.cx--
 	} else {
-		cfg.cx = len(cfg.rows[cfg.cy-1].chars)
-		cfg.rows[cfg.cy-1].chars = append(cfg.rows[cfg.cy-1].chars, cfg.rows[cfg.cy].chars...)
-		cfg.rows[cfg.cy-1].render = editorUpdateRow(cfg.rows[cfg.cy-1].chars)
+		cfg.cx = len(cfg.rows[cfg.cy-1])
+		cfg.rows[cfg.cy-1] = append(cfg.rows[cfg.cy-1], cfg.rows[cfg.cy]...)
 		editorDelRow(cfg.cy)
 		cfg.cy--
 	}
@@ -91,8 +91,7 @@ func editorInsertChar(c int) {
 	if cfg.cy == len(cfg.rows) {
 		editorInsertRow(len(cfg.rows), "")
 	}
-	cfg.rows[cfg.cy].chars = editorRowInsertChar(cfg.rows[cfg.cy].chars, cfg.cx, c)
-	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
+	cfg.rows[cfg.cy] = editorRowInsertChar(cfg.rows[cfg.cy], cfg.cx, c)
 	cfg.dirty = true
 	cfg.cx++
 }
@@ -103,10 +102,9 @@ func editorInsertNewline() {
 		return
 	}
 
-	moveChars := string(cfg.rows[cfg.cy].chars[cfg.cx:])
+	moveChars := string(cfg.rows[cfg.cy][cfg.cx:])
 
-	cfg.rows[cfg.cy].chars = cfg.rows[cfg.cy].chars[:cfg.cx]
-	cfg.rows[cfg.cy].render = editorUpdateRow(cfg.rows[cfg.cy].chars)
+	cfg.rows[cfg.cy] = cfg.rows[cfg.cy][:cfg.cx]
 
 	editorInsertRow(cfg.cy+1, moveChars)
 
@@ -119,11 +117,7 @@ func editorInsertRow(rowidx int, s string) {
 		return
 	}
 
-	rns := []rune(s)
-	row := erow{
-		chars:  rns,
-		render: editorUpdateRow(rns),
-	}
+	row := []rune(s)
 
 	cfg.rows = append(cfg.rows, erow{})
 	copy(cfg.rows[rowidx+1:], cfg.rows[rowidx:])
