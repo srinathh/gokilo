@@ -1,7 +1,22 @@
 package main
 
+type erow []rune
+
+func (row erow) Text() []rune {
+	dest := []rune{}
+	for _, r := range row {
+		switch r {
+		case '\t':
+			dest = append(dest, tabSpaces...)
+		default:
+			dest = append(dest, r)
+		}
+	}
+	return dest
+}
+
 // editorRowCxToRx transforms cursor positions to account for tab stops
-func editorRowCxToRx(row erow, cx int) int {
+func (row erow) editorRowCxToRx(cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
 		if row[j] == '\t' {
@@ -11,6 +26,29 @@ func editorRowCxToRx(row erow, cx int) int {
 	}
 	return rx
 
+}
+
+func (row erow) editorRowDelChar(at int) []rune {
+	if at < 0 || at >= len(row) {
+		return row
+	}
+
+	copy(row[at:], row[at+1:])
+	row = row[:len(row)-1]
+	return row
+}
+
+// Insert Operations
+func (row erow) editorRowInsertChar(at, c int) []rune {
+	// if at out of bounds, append to the end of the row
+	if at < 0 || at > len(row) {
+		return row
+	}
+
+	row = append(row, 0)
+	copy(row[at+1:], row[at:])
+	row[at] = rune(c)
+	return row
 }
 
 // Delete operations
@@ -28,7 +66,7 @@ func editorDelChar() {
 
 	// different handling for at the beginning of the line or middle of line
 	if cfg.cx > 0 {
-		cfg.rows[cfg.cy] = editorRowDelChar(cfg.rows[cfg.cy], cfg.cx-1)
+		cfg.rows[cfg.cy] = cfg.rows[cfg.cy].editorRowDelChar(cfg.cx - 1)
 		cfg.cx--
 	} else {
 		cfg.cx = len(cfg.rows[cfg.cy-1])
@@ -37,16 +75,6 @@ func editorDelChar() {
 		cfg.cy--
 	}
 	cfg.dirty = true
-}
-
-func editorRowDelChar(row []rune, at int) []rune {
-	if at < 0 || at >= len(row) {
-		return row
-	}
-
-	copy(row[at:], row[at+1:])
-	row = row[:len(row)-1]
-	return row
 }
 
 func editorDelRow(rowidx int) {
@@ -59,24 +87,11 @@ func editorDelRow(rowidx int) {
 	cfg.dirty = true
 }
 
-// Insert Operations
-func editorRowInsertChar(row []rune, at, c int) []rune {
-	// if at out of bounds, append to the end of the row
-	if at < 0 || at > len(row) {
-		return row
-	}
-
-	row = append(row, 0)
-	copy(row[at+1:], row[at:])
-	row[at] = rune(c)
-	return row
-}
-
 func editorInsertChar(c int) {
 	if cfg.cy == len(cfg.rows) {
 		editorInsertRow(len(cfg.rows), "")
 	}
-	cfg.rows[cfg.cy] = editorRowInsertChar(cfg.rows[cfg.cy], cfg.cx, c)
+	cfg.rows[cfg.cy] = cfg.rows[cfg.cy].editorRowInsertChar(cfg.cx, c)
 	cfg.dirty = true
 	cfg.cx++
 }
