@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gokilo/internal/rawmode"
 	"os"
 )
 
@@ -14,7 +15,7 @@ func ctrlKey(b byte) int {
 }
 
 func initEditor() error {
-	rows, cols, err := getWindowSize()
+	rows, cols, err := rawmode.GetWindowSize()
 	if err != nil {
 		return err
 	}
@@ -30,9 +31,11 @@ func initEditor() error {
 
 func main() {
 
-	if err := enableRawMode(); err != nil {
+	b, err := rawmode.Enable()
+	if err != nil {
 		safeExit(err)
 	}
+	cfg.OrigTermCfg = b
 
 	if err := initEditor(); err != nil {
 		safeExit(err)

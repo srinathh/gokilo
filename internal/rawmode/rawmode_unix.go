@@ -1,39 +1,47 @@
 // +build !windows
 
-package main
+package rawmode
 
 import (
-	"errors"
+	"bytes"
+	"encoding/gob"
+	"fmt"
 
 	"golang.org/x/sys/unix"
 )
 
-func getWindowSize() (int, int, error) {
+// GetWindowSize returns the number of rows and columns in that order
+// in the current console
+func GetWindowSize() (int, int, error) {
 
 	ws, err := unix.IoctlGetWinsize(unix.Stdout, unix.TIOCGWINSZ)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("error fetching window size: %w", err)
 	}
 	if ws.Row == 0 || ws.Col == 0 {
-		return 0, 0, errors.New("got non zero column or row")
+		return 0, 0, fmt.Errorf("Got a zero size column or row")
 	}
 
 	return int(ws.Row), int(ws.Col), nil
 
 }
 
-// enableRawMode switches from cooked or canonical mode to raw mode
-// by using syscalls. Currently this is the implrementation for Unix only
-func enableRawMode() error {
+// Enable switches the console from cooked or canonical mode to raw mode.
+// It returns the current terminal settings for use in restoring console
+// serlialized to a platform independent byte slice via gob
+func Enable() ([]byte, error) {
 
 	// Gets TermIOS data structure. From glibc, we find the cmd should be TCGETS
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcgetattr.c.html
 	termios, err := unix.IoctlGetTermios(unix.Stdin, unix.TCGETS)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error fetching existing console settings: %w", err)
 	}
 
-	cfg.OrigTermCfg = *termios
+	buf := bytes.Buffer{}
+	if err := gob.NewEncoder(&buf).Encode(termios); err != nil {
+		return nil, fmt.Errorf("error serializing existing console settings: %w", err)
+	}
 
 	// turn off echo & canonical mode by using a bitwise clear operator &^
 	termios.Lflag = termios.Lflag &^ (unix.ECHO | unix.ICANON | unix.ISIG | unix.IEXTEN)
@@ -46,16 +54,23 @@ func enableRawMode() error {
 	// the corresponding command is TCSETSF
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcsetattr.c.html
 	if err := unix.IoctlSetTermios(unix.Stdin, unix.TCSETSF, termios); err != nil {
-		return err
+		return buf.Bytes(), err
 	}
 
-	return nil
+	return buf.Bytes(), nil
 }
 
-func disableRawMode() error {
-	termios := cfg.OrigTermCfg.(unix.Termios)
+// Restore restoes the console to a previous row setting
+func Restore(original []byte) error {
+
+	var termios unix.Termios
+
+	if err := gob.NewDecoder(bytes.NewReader(original)).Decode(&termios); err != nil {
+		return fmt.Errorf("error decoding terminal settings: %w", err)
+	}
+
 	if err := unix.IoctlSetTermios(unix.Stdin, unix.TCSETSF, &termios); err != nil {
-		return err
+		return fmt.Errorf("error restoring original console settings: %w", err)
 	}
 	return nil
 }

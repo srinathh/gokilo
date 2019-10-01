@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"gokilo/internal/rawmode"
 	"io"
 	"os"
 )
@@ -11,7 +12,7 @@ func safeExit(err error) {
 	fmt.Fprint(os.Stdout, "\x1b[2J")
 	fmt.Fprint(os.Stdout, "\x1b[H")
 
-	if err1 := disableRawMode(); err1 != nil {
+	if err1 := rawmode.Restore(cfg.OrigTermCfg); err1 != nil {
 		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
 	}
 

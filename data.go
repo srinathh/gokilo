@@ -9,7 +9,7 @@ import (
 type Config struct {
 	ScreenRows    int
 	ScreenCols    int
-	OrigTermCfg   interface{}
+	OrigTermCfg   []byte
 	StatusMsg     string
 	StatusMsgTime time.Time
 }
