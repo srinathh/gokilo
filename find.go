@@ -7,41 +7,41 @@ import (
 func editorFindCallback(query string, key int) {
 	switch key {
 	case '\r', '\x1b':
-		cfg.lastMatch = -1
-		cfg.direction = 1
+		editor.LastMatch = -1
+		editor.Direction = 1
 		return
 
 	case keyArrowRight, keyArrowDown:
-		cfg.direction = 1
+		editor.Direction = 1
 	case keyArrowLeft, keyArrowUp:
-		cfg.direction = -1
+		editor.Direction = -1
 	default:
-		cfg.lastMatch = -1
-		cfg.direction = 1
+		editor.LastMatch = -1
+		editor.Direction = 1
 	}
 
-	if cfg.lastMatch == -1 {
-		cfg.direction = 1
+	if editor.LastMatch == -1 {
+		editor.Direction = 1
 	}
 
-	current := cfg.lastMatch
+	current := editor.LastMatch
 
-	for i := 0; i < len(cfg.rows); i++ {
+	for i := 0; i < len(editor.Rows); i++ {
 
-		current = current + cfg.direction
+		current = current + editor.Direction
 		if current == -1 {
-			current = len(cfg.rows) - 1
-		} else if current == len(cfg.rows) {
+			current = len(editor.Rows) - 1
+		} else if current == len(editor.Rows) {
 			current = 0
 		}
 
-		row := cfg.rows[current]
+		row := editor.Rows[current]
 
 		if idx := runes.Index(runes.ToLower(row), runes.ToLower([]rune(query))); idx != -1 {
-			cfg.lastMatch = current
-			cfg.cy = current
-			cfg.cx = idx
-			cfg.rowOffset = len(cfg.rows)
+			editor.LastMatch = current
+			editor.Cy = current
+			editor.Cx = idx
+			editor.RowOffset = len(editor.Rows)
 			break
 		}
 
@@ -50,18 +50,18 @@ func editorFindCallback(query string, key int) {
 
 func editorFind() {
 
-	savedCx := cfg.cx
-	savedCy := cfg.cy
-	savedColOffset := cfg.colOffset
-	savedRowOffset := cfg.rowOffset
+	savedCx := editor.Cx
+	savedCy := editor.Cy
+	savedColOffset := editor.ColOffset
+	savedRowOffset := editor.RowOffset
 
 	query := editorPrompt("Search (use ESC/ARROWS/ENTER): %s", editorFindCallback)
 
 	if query == "" {
-		cfg.cx = savedCx
-		cfg.cy = savedCy
-		cfg.colOffset = savedColOffset
-		cfg.rowOffset = savedRowOffset
+		editor.Cx = savedCx
+		editor.Cy = savedCy
+		editor.ColOffset = savedColOffset
+		editor.RowOffset = savedRowOffset
 	}
 
 }

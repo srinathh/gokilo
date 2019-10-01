@@ -41,32 +41,32 @@ func editorRowsToString() string {
 }
 
 func editorSave() {
-	if cfg.fileName == "" {
-		cfg.fileName = editorPrompt("Save as: %s", nil)
-		if cfg.fileName == "" {
+	if editor.FileName == "" {
+		editor.FileName = editorPrompt("Save as: %s", nil)
+		if editor.FileName == "" {
 			editorSetStatusMsg("Save aborted!")
 			return
 		}
 	}
 
-	fil, err := os.Create(cfg.fileName)
+	fil, err := os.Create(editor.FileName)
 	if err != nil {
-		editorSetStatusMsg("ERROR creating file: %s: %s", err, cfg.fileName)
+		editorSetStatusMsg("ERROR creating file: %s: %s", err, editor.FileName)
 		return
 	}
 	defer fil.Close()
 
 	if _, err := fmt.Fprint(fil, editorRowsToString()); err != nil {
-		editorSetStatusMsg("ERROR writing to file: %s: %s", err, cfg.fileName)
+		editorSetStatusMsg("ERROR writing to file: %s: %s", err, editor.FileName)
 		return
 	}
 
 	if err = fil.Close(); err != nil {
-		editorSetStatusMsg("ERROR closing written file: %s: %s", err, cfg.fileName)
+		editorSetStatusMsg("ERROR closing written file: %s: %s", err, editor.FileName)
 		return
 	}
 
-	editorSetStatusMsg("SAVED to file: %s", cfg.fileName)
-	cfg.dirty = false
+	editorSetStatusMsg("SAVED to file: %s", editor.FileName)
+	editor.Dirty = false
 
 }

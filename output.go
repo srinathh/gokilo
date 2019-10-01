@@ -24,7 +24,7 @@ func editorRefreshScreen() {
 	editorDrawStatusMsg(&ab)
 
 	// reposition cursor
-	fmt.Fprintf(&ab, "\x1b[%d;%dH", cfg.cy-cfg.rowOffset+1, cfg.rx-cfg.colOffset+1)
+	fmt.Fprintf(&ab, "\x1b[%d;%dH", editor.Cy-editor.RowOffset+1, editor.Rx-editor.ColOffset+1)
 
 	// show cursor
 	fmt.Fprint(&ab, "\x1b[?25h")
@@ -34,48 +34,48 @@ func editorRefreshScreen() {
 }
 
 func editorScroll() {
-	cfg.rx = 0
-	if cfg.cy < len(cfg.rows) {
-		cfg.rx = cfg.rows[cfg.cy].cxToRx(cfg.cx)
+	editor.Rx = 0
+	if editor.Cy < len(editor.Rows) {
+		editor.Rx = editor.Rows[editor.Cy].cxToRx(editor.Cx)
 	}
 
-	if cfg.cy < cfg.rowOffset {
-		cfg.rowOffset = cfg.cy
+	if editor.Cy < editor.RowOffset {
+		editor.RowOffset = editor.Cy
 	}
 
-	if cfg.cy >= cfg.rowOffset+cfg.screenRows {
-		cfg.rowOffset = cfg.cy - cfg.screenRows + 1
+	if editor.Cy >= editor.RowOffset+cfg.ScreenRows {
+		editor.RowOffset = editor.Cy - cfg.ScreenRows + 1
 	}
 
-	if cfg.rx < cfg.colOffset {
-		cfg.colOffset = cfg.rx
+	if editor.Rx < editor.ColOffset {
+		editor.ColOffset = editor.Rx
 	}
 
-	if cfg.rx >= cfg.colOffset+cfg.screenCols {
-		cfg.colOffset = cfg.rx - cfg.screenCols + 1
+	if editor.Rx >= editor.ColOffset+cfg.ScreenCols {
+		editor.ColOffset = editor.Rx - cfg.ScreenCols + 1
 	}
 }
 
 func editorDrawStatusBar(ab *bytes.Buffer) {
 	fmt.Fprint(ab, "\x1b[7m")
 
-	fileName := cfg.fileName
+	fileName := editor.FileName
 	if fileName == "" {
 		fileName = "No Name"
 	}
 	dirtyChar := ' '
-	if cfg.dirty {
+	if editor.Dirty {
 		dirtyChar = '*'
 	}
 
-	leftStatusString := fmt.Sprintf("%c%.20s - %d lines", dirtyChar, fileName, len(cfg.rows))
-	rightStatusString := fmt.Sprintf("%dc %d/%dr", cfg.cx+1, cfg.cy+1, len(cfg.rows))
-	numSpaces := cfg.screenCols - len(leftStatusString) - len(rightStatusString)
+	leftStatusString := fmt.Sprintf("%c%.20s - %d lines", dirtyChar, fileName, len(editor.Rows))
+	rightStatusString := fmt.Sprintf("%dc %d/%dr", editor.Cx+1, editor.Cy+1, len(editor.Rows))
+	numSpaces := cfg.ScreenCols - len(leftStatusString) - len(rightStatusString)
 
 	if numSpaces >= 0 {
 		fmt.Fprint(ab, leftStatusString+strings.Repeat(" ", numSpaces)+rightStatusString)
 	} else {
-		fmt.Fprint(ab, (leftStatusString + rightStatusString)[:cfg.screenCols])
+		fmt.Fprint(ab, (leftStatusString + rightStatusString)[:cfg.ScreenCols])
 	}
 
 	fmt.Fprint(ab, "\x1b[m")
@@ -83,38 +83,38 @@ func editorDrawStatusBar(ab *bytes.Buffer) {
 }
 
 func editorSetStatusMsg(format string, a ...interface{}) {
-	cfg.statusMsg = fmt.Sprintf(format, a...)
-	cfg.statusMsgTime = time.Now()
+	cfg.StatusMsg = fmt.Sprintf(format, a...)
+	cfg.StatusMsgTime = time.Now()
 }
 
 func editorDrawStatusMsg(ab *bytes.Buffer) {
 	fmt.Fprint(ab, "\x1b[K") // clear the line
-	if time.Now().Sub(cfg.statusMsgTime).Seconds() < 5 {
-		if len(cfg.statusMsg) < cfg.screenCols {
-			fmt.Fprint(ab, cfg.statusMsg)
+	if time.Now().Sub(cfg.StatusMsgTime).Seconds() < 5 {
+		if len(cfg.StatusMsg) < cfg.ScreenCols {
+			fmt.Fprint(ab, cfg.StatusMsg)
 		} else {
-			fmt.Fprint(ab, cfg.statusMsg[:cfg.screenCols])
+			fmt.Fprint(ab, cfg.StatusMsg[:cfg.ScreenCols])
 		}
 	}
 }
 
 func editorDrawRows(ab *bytes.Buffer) {
-	for y := 0; y < cfg.screenRows; y++ {
+	for y := 0; y < cfg.ScreenRows; y++ {
 
-		fileRow := y + cfg.rowOffset
+		fileRow := y + editor.RowOffset
 
-		if fileRow >= len(cfg.rows) {
+		if fileRow >= len(editor.Rows) {
 			// print welcome message only if there is no file being edited
-			if len(cfg.rows) == 0 && y == cfg.screenRows/3 {
+			if len(editor.Rows) == 0 && y == cfg.ScreenRows/3 {
 				welcomeMsg := fmt.Sprintf("Kilo Editor -- version %s", kiloVersion)
 				welcomeLen := len(welcomeMsg)
 
 				// if the message is too long to fit, truncate
-				if welcomeLen > cfg.screenCols {
-					welcomeMsg = welcomeMsg[:cfg.screenCols]
-					welcomeLen = cfg.screenCols
+				if welcomeLen > cfg.ScreenCols {
+					welcomeMsg = welcomeMsg[:cfg.ScreenCols]
+					welcomeLen = cfg.ScreenCols
 				}
-				padding := (cfg.screenCols - welcomeLen) / 2
+				padding := (cfg.ScreenCols - welcomeLen) / 2
 
 				// if there is at least 1 padding required, use the Tilde to start line
 				if padding > 0 {
@@ -132,16 +132,16 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			rowText := cfg.rows[fileRow].text()
-			rowSize := len(rowText) - cfg.colOffset
+			rowText := editor.Rows[fileRow].text()
+			rowSize := len(rowText) - editor.ColOffset
 			if rowSize < 0 {
 				rowSize = 0
 			}
-			if rowSize > cfg.screenCols {
-				rowSize = cfg.screenCols
+			if rowSize > cfg.ScreenCols {
+				rowSize = cfg.ScreenCols
 			}
 			if rowSize > 0 {
-				fmt.Fprint(ab, string(rowText[cfg.colOffset:cfg.colOffset+rowSize]))
+				fmt.Fprint(ab, string(rowText[editor.ColOffset:editor.ColOffset+rowSize]))
 			}
 		}
 

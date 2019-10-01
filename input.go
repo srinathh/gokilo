@@ -19,36 +19,36 @@ func editorProcessKeypress() error {
 
 	switch b {
 	case '\r':
-		editorInsertNewline()
+		editor.InsertNewline()
 		break
 
 	case ctrlKey('l'), '\x1b':
 		break
 
 	case ctrlKey('q'):
-		if cfg.dirty && cfg.quitTimes > 0 {
-			editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", cfg.quitTimes)
-			cfg.quitTimes--
+		if editor.Dirty && editor.QuitTimes > 0 {
+			editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", editor.QuitTimes)
+			editor.QuitTimes--
 			return nil
 		}
 		safeExit(nil)
 	case keyArrowDown, keyArrowLeft, keyArrowRight, keyArrowUp:
 		editorMoveCursor(b)
 	case keyPageUp:
-		cfg.cy = cfg.rowOffset
-		for j := 0; j < cfg.screenRows; j++ {
+		editor.Cy = editor.RowOffset
+		for j := 0; j < cfg.ScreenRows; j++ {
 			editorMoveCursor(keyArrowUp)
 		}
 	case keyPageDown:
-		cfg.cy = cfg.rowOffset + cfg.screenRows - 1
-		if cfg.cy > len(cfg.rows) {
-			cfg.cy = len(cfg.rows)
+		editor.Cy = editor.RowOffset + cfg.ScreenRows - 1
+		if editor.Cy > len(editor.Rows) {
+			editor.Cy = len(editor.Rows)
 		}
-		for j := 0; j < cfg.screenRows; j++ {
+		for j := 0; j < cfg.ScreenRows; j++ {
 			editorMoveCursor(keyArrowDown)
 		}
 	case keyHome:
-		cfg.cx = 0
+		editor.Cx = 0
 
 	case ctrlKey('s'):
 		editorSave()
@@ -57,67 +57,67 @@ func editorProcessKeypress() error {
 		editorFind()
 
 	case keyEnd:
-		if cfg.cy < len(cfg.rows) {
-			cfg.cx = len(cfg.rows[cfg.cy])
+		if editor.Cy < len(editor.Rows) {
+			editor.Cx = len(editor.Rows[editor.Cy])
 		}
 
 	case keyBackSpace, ctrlKey('h'):
-		editorDelChar()
+		editor.DelChar()
 
 	case keyDelete:
 		editorMoveCursor(keyArrowRight)
-		editorDelChar()
+		editor.DelChar()
 
 	default:
-		editorInsertChar(b)
+		editor.InsertChar(b)
 	}
-	cfg.quitTimes = kiloQuitTimes
+	editor.QuitTimes = kiloQuitTimes
 	return nil
 }
 
 func editorMoveCursor(key int) {
 
-	pastEOF := cfg.cy >= len(cfg.rows)
+	pastEOF := editor.Cy >= len(editor.Rows)
 
 	switch key {
 	case keyArrowLeft:
-		if cfg.cx > 0 {
-			cfg.cx--
-		} else if cfg.cy > 0 {
-			cfg.cy--
-			cfg.cx = len(cfg.rows[cfg.cy])
+		if editor.Cx > 0 {
+			editor.Cx--
+		} else if editor.Cy > 0 {
+			editor.Cy--
+			editor.Cx = len(editor.Rows[editor.Cy])
 		}
 	case keyArrowRight:
 		// right moves only if we're within a valid line.
 		// for past EOF, there's no movement
 		if !pastEOF {
-			if cfg.cx < len(cfg.rows[cfg.cy]) {
-				cfg.cx++
-			} else if cfg.cx == len(cfg.rows[cfg.cy]) {
-				cfg.cy++
-				cfg.cx = 0
+			if editor.Cx < len(editor.Rows[editor.Cy]) {
+				editor.Cx++
+			} else if editor.Cx == len(editor.Rows[editor.Cy]) {
+				editor.Cy++
+				editor.Cx = 0
 			}
 		}
 	case keyArrowDown:
-		if cfg.cy < len(cfg.rows) {
-			cfg.cy++
+		if editor.Cy < len(editor.Rows) {
+			editor.Cy++
 		}
 	case keyArrowUp:
-		if cfg.cy > 0 {
-			cfg.cy--
+		if editor.Cy > 0 {
+			editor.Cy--
 		}
 	}
 
 	// we may have moved to a different row, so reset conditions
-	pastEOF = cfg.cy >= len(cfg.rows)
+	pastEOF = editor.Cy >= len(editor.Rows)
 
 	rowLen := 0
 	if !pastEOF {
-		rowLen = len(cfg.rows[cfg.cy])
+		rowLen = len(editor.Rows[editor.Cy])
 	}
 
-	if cfg.cx > rowLen {
-		cfg.cx = rowLen
+	if editor.Cx > rowLen {
+		editor.Cx = rowLen
 	}
 }
 
