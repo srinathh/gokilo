@@ -7,27 +7,27 @@ import (
 	"strings"
 )
 
-func editorOpen(fileName string) error {
+// Open reads a file and returns erows representing each line
+func Open(fileName string) ([]ERow, error) {
 
 	r, err := os.Open(fileName)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error opening file %s: %w", fileName, err)
 	}
 	defer r.Close()
 
-	editor.Rows = []erow{}
+	ret := []ERow{}
 
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		//editorAppendRow(scanner.Text())
-		editor.InsertRow(len(editor.Rows), scanner.Text())
+		ret = append(ret, []rune(scanner.Text()))
 	}
 	if err := scanner.Err(); err != nil {
-		return err
+		return nil, fmt.Errorf("error reading file %s: %w", fileName, err)
 	}
-	editor.FileName = fileName
-	editor.Dirty = false
-	return nil
+
+	return ret, err
+
 }
 
 func editorRowsToString() string {

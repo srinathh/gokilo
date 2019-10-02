@@ -41,10 +41,13 @@ func main() {
 		safeExit(err)
 	}
 
-	if len(os.Args) >= 2 {
-		if err := editorOpen(os.Args[1]); err != nil {
+	if len(os.Args) == 2 {
+		rows, err := Open(os.Args[1])
+		if err != nil {
 			safeExit(err)
 		}
+		editor.Rows = rows
+		editor.FileName = os.Args[1]
 	}
 
 	for {

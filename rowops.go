@@ -1,8 +1,9 @@
 package main
 
-type erow []rune
+// ERow represents a line of text in a file
+type ERow []rune
 
-func (row erow) text() []rune {
+func (row ERow) text() []rune {
 	dest := []rune{}
 	for _, r := range row {
 		switch r {
@@ -16,7 +17,7 @@ func (row erow) text() []rune {
 }
 
 // cxToRx transforms cursor positions to account for tab stops
-func (row erow) cxToRx(cx int) int {
+func (row ERow) cxToRx(cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
 		if row[j] == '\t' {
@@ -28,7 +29,7 @@ func (row erow) cxToRx(cx int) int {
 
 }
 
-func (row erow) delChar(at int) []rune {
+func (row ERow) delChar(at int) []rune {
 	if at < 0 || at >= len(row) {
 		return row
 	}
@@ -39,7 +40,7 @@ func (row erow) delChar(at int) []rune {
 }
 
 // Insert Operations
-func (row erow) insertChar(at, c int) []rune {
+func (row ERow) insertChar(at, c int) []rune {
 	// if at out of bounds, append to the end of the row
 	if at < 0 || at > len(row) {
 		return row

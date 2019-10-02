@@ -4,7 +4,7 @@ package main
 type Editor struct {
 	Cx, Cy    int
 	Rx        int
-	Rows      []erow
+	Rows      []ERow
 	RowOffset int
 	ColOffset int
 	FileName  string
@@ -85,7 +85,7 @@ func (e *Editor) InsertRow(rowidx int, s string) {
 
 	row := []rune(s)
 
-	e.Rows = append(e.Rows, erow{})
+	e.Rows = append(e.Rows, ERow{})
 	copy(e.Rows[rowidx+1:], e.Rows[rowidx:])
 	e.Rows[rowidx] = row
 
