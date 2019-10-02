@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gokilo/internal/runes"
+	"gokilo/runes"
 )
 
 func editorFindCallback(query string, key int) {

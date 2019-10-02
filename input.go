@@ -1,18 +1,5 @@
 package main
 
-const (
-	keyArrowUp    = 1000
-	keyArrowDown  = 1001
-	keyArrowLeft  = 1002
-	keyArrowRight = 1003
-	keyPageUp     = 1004
-	keyPageDown   = 1005
-	keyHome       = 1006
-	keyEnd        = 1007
-	keyDelete     = 1008
-	keyBackSpace  = 127
-)
-
 func editorProcessKeypress() error {
 
 	b := editorReadKey()

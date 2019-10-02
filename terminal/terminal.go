@@ -3,31 +3,34 @@ package main
 import (
 	"errors"
 	"fmt"
-	"gokilo/internal/rawmode"
 	"io"
 	"os"
 )
 
-func safeExit(err error) {
-	fmt.Fprint(os.Stdout, "\x1b[2J")
-	fmt.Fprint(os.Stdout, "\x1b[H")
-
-	if err1 := rawmode.Restore(cfg.OrigTermCfg); err1 != nil {
-		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
-	}
-
-	if err == nil {
-		os.Exit(0)
-	}
-
-	fmt.Fprintf(os.Stderr, "Error: %s\r\n", err)
-	os.Exit(1)
-}
+// Special keys
+const (
+	KeyArrowUp = iota
+	KeyArrowDown
+	KeyArrowLeft
+	KeyArrowRight
+	KeyPageUp
+	KeyPageDown
+	KeyHome
+	KeyEnd
+	KeyDelete
+	KeyBackSpace
+)
 
 // single space buffer to reduce allocations
 var keyBuf = []byte{0}
 var seq = []byte{0, 0, 0}
 var errNoInput = errors.New("no input")
+
+// Key represents the key entered by the user
+type Key struct {
+	Regular rune
+	Special int
+}
 
 func rawReadKey() (byte, error) {
 	n, err := os.Stdin.Read(keyBuf)
