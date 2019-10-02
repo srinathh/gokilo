@@ -51,7 +51,7 @@ func editorProcessKeypress() error {
 		editor.Cx = 0
 
 	case ctrlKey('s'):
-		editorSave()
+		editor.Save()
 
 	case ctrlKey('f'):
 		editorFind()

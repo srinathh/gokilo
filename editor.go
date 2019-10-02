@@ -91,3 +91,22 @@ func (e *Editor) InsertRow(rowidx int, s string) {
 
 	e.Dirty = true
 }
+
+// Save gets a filename if required and saves a file
+func (e *Editor) Save() {
+
+	if e.FileName == "" {
+		e.FileName = editorPrompt("Save as: %s", nil)
+		if editor.FileName == "" {
+			editorSetStatusMsg("Save aborted!")
+			return
+		}
+	}
+
+	if err := Save(e.Rows, e.FileName); err != nil {
+		editorSetStatusMsg("ERROR SAVING: %s", err)
+	} else {
+		editorSetStatusMsg("SAVED FILE: %s", e.FileName)
+		e.Dirty = false
+	}
+}

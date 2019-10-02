@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 // Open reads a file and returns erows representing each line
@@ -30,43 +29,23 @@ func Open(fileName string) ([]ERow, error) {
 
 }
 
-func editorRowsToString() string {
-	var sb strings.Builder
+// Save writes a file to disk
+func Save(rows []ERow, fileName string) error {
 
-	for _, rows := range editor.Rows {
-		sb.WriteString(string(rows))
-		sb.WriteByte('\n')
-	}
-	return sb.String()
-}
-
-func editorSave() {
-	if editor.FileName == "" {
-		editor.FileName = editorPrompt("Save as: %s", nil)
-		if editor.FileName == "" {
-			editorSetStatusMsg("Save aborted!")
-			return
-		}
-	}
-
-	fil, err := os.Create(editor.FileName)
+	fil, err := os.Create(fileName)
 	if err != nil {
-		editorSetStatusMsg("ERROR creating file: %s: %s", err, editor.FileName)
-		return
+		return fmt.Errorf("error creating file: %s: %w", fileName, err)
 	}
 	defer fil.Close()
 
-	if _, err := fmt.Fprint(fil, editorRowsToString()); err != nil {
-		editorSetStatusMsg("ERROR writing to file: %s: %s", err, editor.FileName)
-		return
+	for _, row := range rows {
+		if _, err := fmt.Fprintf(fil, "%s\n", string(row)); err != nil {
+			return fmt.Errorf("error writing to file %s: %w", fileName, err)
+		}
 	}
 
 	if err = fil.Close(); err != nil {
-		editorSetStatusMsg("ERROR closing written file: %s: %s", err, editor.FileName)
-		return
+		return fmt.Errorf("error closing written file: %s: %w", editor.FileName, err)
 	}
-
-	editorSetStatusMsg("SAVED to file: %s", editor.FileName)
-	editor.Dirty = false
-
+	return nil
 }
