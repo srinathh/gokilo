@@ -8,17 +8,16 @@ import (
 
 // Special keys
 const (
-	KeyNoSpl = iota
-	KeyArrowUp
-	KeyArrowDown
-	KeyArrowLeft
-	KeyArrowRight
-	KeyPageUp
-	KeyPageDown
-	KeyHome
-	KeyEnd
-	KeyDelete
-	KeyBackSpace
+	KeyNoSpl      = iota
+	KeyArrowUp    // 27	91	65
+	KeyArrowDown  // 27	91	66
+	KeyArrowLeft  // 27	91	68
+	KeyArrowRight // 27	91	67
+	KeyPageUp     // 27 	91   5	126
+	KeyPageDown   // 27	91	 6	126
+	KeyHome       // 27	91	72
+	KeyEnd        // 29	91	70
+	KeyDelete     // 27	91	 3	126
 )
 
 // single space buffer to reduce allocations
@@ -37,28 +36,42 @@ type Key struct {
 
 var bufr = bufio.NewReader(os.Stdin)
 
-// ReadKey reads a key from Stdin. Stdin should be put in raw mode with
+// ReadKey reads a key from Stdin processing it for VT100 sequences.
+// Stdin should be put in raw mode with
 // VT100 processing enabled prior to using RawReadKey. If terminal read is set to
 // timeout mode and no key is pressed, then ErrNoInput will be returned
-func ReadKey() (Key, error) {
-
+func ReadKey(rune, error) (Key, error) {
 	var ret Key
+
+	r, err := RawReadKey()
+	if err != nil {
+		return ret, err
+	}
+
+	switch r {
+	case 27:
+
+	}
+}
+
+// RawReadKey reads a key from Stdin. Stdin should be put in raw mode with
+// VT100 processing enabled prior to using RawReadKey. If terminal read is set to
+// timeout mode and no key is pressed, then ErrNoInput will be returned
+func RawReadKey() (rune, error) {
 
 	r, n, err := bufr.ReadRune()
 
 	if err != nil {
-		return ret, err
+		return 0, err
 	}
 
 	// this code handles situation where a timeout has been set
 	// but no key was pressed
 	if n == 0 && err == nil {
-		return ret, ErrNoInput
+		return 0, ErrNoInput
 	}
 
-	ret.Regular = r
-	ret.Special = KeyNoSpl
-	return ret, nil
+	return r, nil
 
 }
 
