@@ -48,8 +48,8 @@ func Enable() ([]byte, error) {
 	termios.Iflag = termios.Iflag &^ (unix.IXON | unix.ICRNL | unix.BRKINT | unix.INPCK | unix.ISTRIP)
 	termios.Oflag = termios.Oflag &^ (unix.OPOST)
 	termios.Cflag = termios.Cflag | unix.CS8
-	termios.Cc[unix.VMIN] = 0
-	termios.Cc[unix.VTIME] = 1
+	//termios.Cc[unix.VMIN] = 0
+	//termios.Cc[unix.VTIME] = 1
 	// from the code of tcsetattr in glibc, we find that for TCSAFLUSH,
 	// the corresponding command is TCSETSF
 	// https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/tcsetattr.c.html

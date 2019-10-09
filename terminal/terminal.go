@@ -1,15 +1,15 @@
-package main
+package terminal
 
 import (
+	"bufio"
 	"errors"
-	"fmt"
-	"io"
 	"os"
 )
 
 // Special keys
 const (
-	KeyArrowUp = iota
+	KeyNoSpl = iota
+	KeyArrowUp
 	KeyArrowDown
 	KeyArrowLeft
 	KeyArrowRight
@@ -24,7 +24,10 @@ const (
 // single space buffer to reduce allocations
 var keyBuf = []byte{0}
 var seq = []byte{0, 0, 0}
-var errNoInput = errors.New("no input")
+
+// ErrNoInput indicates that there is no input when reading from keyboard
+// in raw mode. This happens when timeout is set to a low number
+var ErrNoInput = errors.New("no input")
 
 // Key represents the key entered by the user
 type Key struct {
@@ -32,21 +35,39 @@ type Key struct {
 	Special int
 }
 
-func rawReadKey() (byte, error) {
-	n, err := os.Stdin.Read(keyBuf)
-	switch {
-	case err == io.EOF:
-		return 0, errNoInput
-	case err != nil:
-		return 0, err
-	case n == 0:
-		return 0, errNoInput
-	default:
-		return keyBuf[0], nil
+var bufr = bufio.NewReader(os.Stdin)
+
+// ReadKey reads a key from Stdin. Stdin should be put in raw mode with
+// VT100 processing enabled prior to using RawReadKey. If terminal read is set to
+// timeout mode and no key is pressed, then ErrNoInput will be returned
+func ReadKey() (Key, error) {
+
+	var ret Key
+
+	r, n, err := bufr.ReadRune()
+
+	if err != nil {
+		return ret, err
 	}
+
+	// this code handles situation where a timeout has been set
+	// but no key was pressed
+	if n == 0 && err == nil {
+		return ret, ErrNoInput
+	}
+
+	ret.Regular = r
+	ret.Special = KeyNoSpl
+	return ret, nil
+
 }
 
-func editorReadKey() int {
+/*
+
+// ReadKey reads a key from Stdin using RawReadKey and interprets the VT100 sequences
+// If the key pressed is a regular Unicode key,
+// as either a regular
+func ReadKey() int {
 
 	for {
 		key, err := rawReadKey()
@@ -124,3 +145,5 @@ func editorReadKey() int {
 		}
 	}
 }
+
+*/
