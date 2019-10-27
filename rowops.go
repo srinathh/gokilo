@@ -40,7 +40,7 @@ func (row ERow) delChar(at int) []rune {
 }
 
 // Insert Operations
-func (row ERow) insertChar(at, c int) []rune {
+func (row ERow) insertChar(at int, c rune) []rune {
 	// if at out of bounds, append to the end of the row
 	if at < 0 || at > len(row) {
 		return row

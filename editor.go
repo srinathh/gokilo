@@ -51,7 +51,7 @@ func (e *Editor) DelRow(rowidx int) {
 }
 
 // InsertChar inserts a character at a given location
-func (e *Editor) InsertChar(c int) {
+func (e *Editor) InsertChar(c rune) {
 	if e.Cy == len(e.Rows) {
 		e.InsertRow(len(e.Rows), "")
 	}

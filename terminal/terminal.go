@@ -8,16 +8,16 @@ import (
 
 // Special keys
 const (
-	KeyNoSpl      = iota
-	KeyArrowUp    // 27	91	65
-	KeyArrowDown  // 27	91	66
-	KeyArrowLeft  // 27	91	68
-	KeyArrowRight // 27	91	67
-	KeyPageUp     // 27 	91   5	126
-	KeyPageDown   // 27	91	 6	126
-	KeyHome       // 27	91	72
-	KeyEnd        // 29	91	70
-	KeyDelete     // 27	91	 3	126
+	KeyNoSpl = iota
+	KeyArrowUp
+	KeyArrowDown
+	KeyArrowLeft
+	KeyArrowRight
+	KeyPageUp
+	KeyPageDown
+	KeyHome
+	KeyEnd
+	KeyDelete
 	KeyF1
 	KeyF2
 	KeyF3

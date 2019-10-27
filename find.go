@@ -2,18 +2,19 @@ package main
 
 import (
 	"gokilo/runes"
+	"gokilo/terminal"
 )
 
-func editorFindCallback(query string, key int) {
-	switch key {
-	case '\r', '\x1b':
+func editorFindCallback(query string, key terminal.Key) {
+	switch {
+	case key.Regular == '\r' || key.Regular == '\x1b':
 		editor.LastMatch = -1
 		editor.Direction = 1
 		return
 
-	case keyArrowRight, keyArrowDown:
+	case key.Special == terminal.KeyArrowRight, key.Special == terminal.KeyArrowDown:
 		editor.Direction = 1
-	case keyArrowLeft, keyArrowUp:
+	case key.Special == terminal.KeyArrowLeft || key.Special == terminal.KeyArrowUp:
 		editor.Direction = -1
 	default:
 		editor.LastMatch = -1

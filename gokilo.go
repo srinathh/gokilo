@@ -11,8 +11,8 @@ const kiloVersion = "0.0.1"
 var cfg Config
 var editor Editor
 
-func ctrlKey(b byte) int {
-	return int(b & 0x1f)
+func ctrlKey(b byte) rune {
+	return rune(b & 0x1f)
 }
 
 func initEditor() error {
