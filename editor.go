@@ -28,7 +28,7 @@ func (e *Editor) DelChar() {
 
 	// different handling for at the beginning of the line or middle of line
 	if e.Cx > 0 {
-		e.Rows[e.Cy] = e.Rows[e.Cy].delChar(e.Cx - 1)
+		e.Rows[e.Cy] = e.Rows[e.Cy].DelChar(e.Cx - 1)
 		e.Cx--
 	} else {
 		e.Cx = len(e.Rows[e.Cy-1])
@@ -55,7 +55,7 @@ func (e *Editor) InsertChar(c rune) {
 	if e.Cy == len(e.Rows) {
 		e.InsertRow(len(e.Rows), "")
 	}
-	e.Rows[e.Cy] = e.Rows[e.Cy].insertChar(e.Cx, c)
+	e.Rows[e.Cy] = e.Rows[e.Cy].InsertChar(e.Cx, c)
 	e.Dirty = true
 	e.Cx++
 }

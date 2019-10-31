@@ -3,7 +3,8 @@ package main
 // ERow represents a line of text in a file
 type ERow []rune
 
-func (row ERow) text() []rune {
+// Text expands tabs in an eRow to spaces
+func (row ERow) Text() []rune {
 	dest := []rune{}
 	for _, r := range row {
 		switch r {
@@ -16,8 +17,8 @@ func (row ERow) text() []rune {
 	return dest
 }
 
-// cxToRx transforms cursor positions to account for tab stops
-func (row ERow) cxToRx(cx int) int {
+// CxToRx transforms cursor positions to account for tab stops
+func (row ERow) CxToRx(cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
 		if row[j] == '\t' {
@@ -29,7 +30,8 @@ func (row ERow) cxToRx(cx int) int {
 
 }
 
-func (row ERow) delChar(at int) []rune {
+// DelChar deletes a char at a position in a row
+func (row ERow) DelChar(at int) []rune {
 	if at < 0 || at >= len(row) {
 		return row
 	}
@@ -39,8 +41,8 @@ func (row ERow) delChar(at int) []rune {
 	return row
 }
 
-// Insert Operations
-func (row ERow) insertChar(at int, c rune) []rune {
+// InsertChar inserts a rune at a position in an eRow
+func (row ERow) InsertChar(at int, c rune) []rune {
 	// if at out of bounds, append to the end of the row
 	if at < 0 || at > len(row) {
 		return row

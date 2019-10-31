@@ -64,7 +64,7 @@ func safeExit(err error) {
 	fmt.Fprint(os.Stdout, "\x1b[H")
 
 	if err1 := rawmode.Restore(cfg.OrigTermCfg); err1 != nil {
-		fmt.Fprintf(os.Stderr, "Error: diabling raw mode: %s\r\n", err)
+		fmt.Fprintf(os.Stderr, "Error: disabling raw mode: %s\r\n", err)
 	}
 
 	if err == nil {

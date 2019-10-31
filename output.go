@@ -36,7 +36,7 @@ func editorRefreshScreen() {
 func editorScroll() {
 	editor.Rx = 0
 	if editor.Cy < len(editor.Rows) {
-		editor.Rx = editor.Rows[editor.Cy].cxToRx(editor.Cx)
+		editor.Rx = editor.Rows[editor.Cy].CxToRx(editor.Cx)
 	}
 
 	if editor.Cy < editor.RowOffset {
@@ -132,7 +132,7 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			rowText := editor.Rows[fileRow].text()
+			rowText := editor.Rows[fileRow].Text()
 			rowSize := len(rowText) - editor.ColOffset
 			if rowSize < 0 {
 				rowSize = 0
