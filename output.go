@@ -99,6 +99,8 @@ func editorDrawStatusMsg(ab *bytes.Buffer) {
 }
 
 func editorDrawRows(ab *bytes.Buffer) {
+	emptyRow := ERow("~")
+
 	for y := 0; y < cfg.ScreenRows; y++ {
 
 		fileRow := y + editor.RowOffset
@@ -106,50 +108,14 @@ func editorDrawRows(ab *bytes.Buffer) {
 		if fileRow >= len(editor.Rows) {
 			// print welcome message only if there is no file being edited
 			if len(editor.Rows) == 0 && y == cfg.ScreenRows/3 {
-				welcomeMsg := fmt.Sprintf("Kilo Editor -- version %s", kiloVersion)
-				welcomeLen := len(welcomeMsg)
-
-				// if the message is too long to fit, truncate
-				if welcomeLen > cfg.ScreenCols {
-					welcomeMsg = welcomeMsg[:cfg.ScreenCols]
-					welcomeLen = cfg.ScreenCols
-				}
-				padding := (cfg.ScreenCols - welcomeLen) / 2
-
-				// if there is at least 1 padding required, use the Tilde to start line
-				if padding > 0 {
-					fmt.Fprint(ab, "~")
-					padding--
-				}
-
-				// add appropriate number of spaces
-				for i := 0; i < padding; i++ {
-					fmt.Fprint(ab, " ")
-				}
-				fmt.Fprint(ab, welcomeMsg)
-
+				welcomeMsg := ERow(fmt.Sprintf("~ Kilo Editor -- version %s", kiloVersion))
+				fmt.Fprint(ab, string(welcomeMsg.ScreenText(0, cfg.ScreenCols)))
 			} else {
-				fmt.Fprint(ab, "~")
+				fmt.Fprint(ab, string(emptyRow.ScreenText(0, cfg.ScreenCols)))
 			}
 		} else {
-			/*
-				rowText := editor.Rows[fileRow].Text()
-				rowSize := len(rowText) - editor.ColOffset
-				if rowSize < 0 {
-					rowSize = 0
-				}
-				if rowSize > cfg.ScreenCols {
-					rowSize = cfg.ScreenCols
-				}
-				if rowSize > 0 {
-					fmt.Fprint(ab, string(rowText[editor.ColOffset:editor.ColOffset+rowSize]))
-				}
-			*/
 			fmt.Fprint(ab, string(editor.Rows[fileRow].ScreenText(editor.ColOffset, cfg.ScreenCols)))
 		}
-
-		// clear to end of line
-		fmt.Fprint(ab, "\x1b[K")
 
 		fmt.Fprint(ab, "\r\n")
 	}
