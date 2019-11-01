@@ -17,6 +17,31 @@ func (row ERow) Text() []rune {
 	return dest
 }
 
+func spaces(n int) []rune {
+	ret := make([]rune, n)
+	for j := 0; j < n; j++ {
+		ret[j] = ' '
+	}
+	return ret
+}
+
+// ScreenText returns a line of text offset to match screen window
+func (row ERow) ScreenText(colOffset, screenWidth int) []rune {
+
+	ret := spaces(screenWidth)
+
+	txt := row.Text()
+	if colOffset > len(txt) {
+		return spaces(screenWidth)
+	}
+
+	for j := colOffset; j < len(txt) && j < colOffset+screenWidth; j++ {
+		ret[j-colOffset] = txt[j]
+	}
+	return ret
+
+}
+
 // CxToRx transforms cursor positions to account for tab stops
 func (row ERow) CxToRx(cx int) int {
 	rx := 0

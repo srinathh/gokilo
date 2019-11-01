@@ -132,17 +132,20 @@ func editorDrawRows(ab *bytes.Buffer) {
 				fmt.Fprint(ab, "~")
 			}
 		} else {
-			rowText := editor.Rows[fileRow].Text()
-			rowSize := len(rowText) - editor.ColOffset
-			if rowSize < 0 {
-				rowSize = 0
-			}
-			if rowSize > cfg.ScreenCols {
-				rowSize = cfg.ScreenCols
-			}
-			if rowSize > 0 {
-				fmt.Fprint(ab, string(rowText[editor.ColOffset:editor.ColOffset+rowSize]))
-			}
+			/*
+				rowText := editor.Rows[fileRow].Text()
+				rowSize := len(rowText) - editor.ColOffset
+				if rowSize < 0 {
+					rowSize = 0
+				}
+				if rowSize > cfg.ScreenCols {
+					rowSize = cfg.ScreenCols
+				}
+				if rowSize > 0 {
+					fmt.Fprint(ab, string(rowText[editor.ColOffset:editor.ColOffset+rowSize]))
+				}
+			*/
+			fmt.Fprint(ab, string(editor.Rows[fileRow].ScreenText(editor.ColOffset, cfg.ScreenCols)))
 		}
 
 		// clear to end of line
