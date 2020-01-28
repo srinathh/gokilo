@@ -2,16 +2,13 @@ package main
 
 import (
 	"strings"
-	"time"
 )
 
-// Config collects configuraiton params frot he app
+// Config collects configuraiton params from the app
 type Config struct {
-	ScreenRows    int
-	ScreenCols    int
-	OrigTermCfg   []byte
-	StatusMsg     string
-	StatusMsgTime time.Time
+	ScreenRows  int
+	ScreenCols  int
+	OrigTermCfg []byte
 }
 
 const kiloTabStop = 4

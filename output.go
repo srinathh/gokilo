@@ -83,17 +83,17 @@ func editorDrawStatusBar(ab *bytes.Buffer) {
 }
 
 func editorSetStatusMsg(format string, a ...interface{}) {
-	cfg.StatusMsg = fmt.Sprintf(format, a...)
-	cfg.StatusMsgTime = time.Now()
+	editor.StatusMsg = fmt.Sprintf(format, a...)
+	editor.StatusMsgTime = time.Now()
 }
 
 func editorDrawStatusMsg(ab *bytes.Buffer) {
 	fmt.Fprint(ab, "\x1b[K") // clear the line
-	if time.Now().Sub(cfg.StatusMsgTime).Seconds() < 5 {
-		if len(cfg.StatusMsg) < cfg.ScreenCols {
-			fmt.Fprint(ab, cfg.StatusMsg)
+	if time.Now().Sub(editor.StatusMsgTime).Seconds() < 5 {
+		if len(editor.StatusMsg) < cfg.ScreenCols {
+			fmt.Fprint(ab, editor.StatusMsg)
 		} else {
-			fmt.Fprint(ab, cfg.StatusMsg[:cfg.ScreenCols])
+			fmt.Fprint(ab, editor.StatusMsg[:cfg.ScreenCols])
 		}
 	}
 }

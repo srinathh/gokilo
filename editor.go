@@ -1,17 +1,21 @@
 package main
 
+import "time"
+
 // Editor represents a file being edited
 type Editor struct {
-	Cx, Cy    int
-	Rx        int
-	Rows      []ERow
-	RowOffset int
-	ColOffset int
-	FileName  string
-	Dirty     bool
-	QuitTimes int
-	LastMatch int
-	Direction int
+	Cx, Cy        int
+	Rx            int
+	Rows          []ERow
+	RowOffset     int
+	ColOffset     int
+	FileName      string
+	Dirty         bool
+	QuitTimes     int
+	LastMatch     int
+	Direction     int
+	StatusMsg     string
+	StatusMsgTime time.Time
 }
 
 // DelChar deletes a character at current cursor location
