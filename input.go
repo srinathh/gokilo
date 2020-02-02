@@ -4,6 +4,36 @@ import (
 	"gokilo/terminal"
 )
 
+func ctrlKey(b byte) rune {
+	return rune(b & 0x1f)
+}
+
+func editorProcessKeypress() error {
+
+	k, err := terminal.ReadKey()
+	if err != nil {
+		return err
+	}
+
+	switch k.Special {
+	case terminal.KeyNoSpl:
+		switch k.Regular {
+
+		case ctrlKey('q'):
+			/*
+				if editor.Dirty && editor.QuitTimes > 0 {
+					editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", editor.QuitTimes)
+					editor.QuitTimes--
+					return nil
+				}*/
+			SafeExit(nil)
+		}
+
+	}
+	return nil
+}
+
+/*
 func editorProcessKeypress() error {
 
 	k, err := terminal.ReadKey()
@@ -164,3 +194,4 @@ func editorPrompt(prompt string, callback editorPromptCallback) string {
 		}
 	}
 }
+*/

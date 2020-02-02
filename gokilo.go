@@ -1,25 +1,62 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"gokilo/rawmode"
 	"os"
 )
 
-const kiloVersion = "0.0.1"
+const kiloVersion = "0.0.2"
 
-var cfg Config
-var editor Editor
+func safeExit(origCfg []byte, err error) {
+	fmt.Fprint(os.Stdout, "\x1b[2J\x1b[H")
 
-func ctrlKey(b byte) rune {
-	return rune(b & 0x1f)
+	if err1 := rawmode.Restore(origCfg); err1 != nil {
+		fmt.Fprintf(os.Stderr, "Error: disabling raw mode: %s\r\n", err)
+	}
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\r\n", err)
+		os.Exit(1)
+	}
+	os.Exit(0)
 }
 
-func initEditor() error {
+// SafeExit is a global function that can be called to exit safely
+var SafeExit func(error)
+
+func main() {
+
+	origCfg, err := rawmode.Enable()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error enabling raw mode: %v", err)
+		os.Exit(1)
+	}
+
+	SafeExit = func(error) { safeExit(origCfg, err) }
+
 	rows, cols, err := rawmode.GetWindowSize()
 	if err != nil {
-		return err
+		SafeExit(fmt.Errorf("couldn't get window size: %v", err))
 	}
+
+	view := NewView(rows, cols)
+
+	flag.Parse()
+	session := NewSession(flag.Arg(0))
+
+	for {
+		view.RefreshScreen(session)
+		if err := editorProcessKeypress(); err != nil {
+			SafeExit(err)
+		}
+	}
+
+}
+
+/*
+func initEditor() error {
 	cfg.ScreenRows = rows
 	cfg.ScreenRows = cfg.ScreenRows - 2
 	cfg.ScreenCols = cols
@@ -74,3 +111,4 @@ func safeExit(err error) {
 	fmt.Fprintf(os.Stderr, "Error: %s\r\n", err)
 	os.Exit(1)
 }
+*/

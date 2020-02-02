@@ -30,22 +30,22 @@ func Open(fileName string) ([]ERow, error) {
 }
 
 // Save writes a file to disk
-func Save(rows []ERow, fileName string) error {
+func Save(rows []ERow, filename string) error {
 
-	fil, err := os.Create(fileName)
+	fil, err := os.Create(filename)
 	if err != nil {
-		return fmt.Errorf("error creating file: %s: %w", fileName, err)
+		return fmt.Errorf("error creating file: %s: %w", filename, err)
 	}
 	defer fil.Close()
 
 	for _, row := range rows {
 		if _, err := fmt.Fprintf(fil, "%s\n", string(row)); err != nil {
-			return fmt.Errorf("error writing to file %s: %w", fileName, err)
+			return fmt.Errorf("error writing to file %s: %w", filename, err)
 		}
 	}
 
 	if err = fil.Close(); err != nil {
-		return fmt.Errorf("error closing written file: %s: %w", editor.FileName, err)
+		return fmt.Errorf("error closing written file: %s: %w", filename, err)
 	}
 	return nil
 }
