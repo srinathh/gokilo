@@ -37,20 +37,6 @@ func NewView(rows, cols int) *View {
 	}
 }
 
-// Text expands tabs in an eRow to spaces
-func Text(row ERow) ERow {
-	dest := []rune{}
-	for _, r := range row {
-		switch r {
-		case '\t':
-			dest = append(dest, tabSpaces...)
-		default:
-			dest = append(dest, r)
-		}
-	}
-	return dest
-}
-
 func spaces(width int) ERow {
 	ret := make([]rune, width)
 	for j := 0; j < width; j++ {
@@ -62,7 +48,7 @@ func spaces(width int) ERow {
 // ScreenText returns a line of text offset to match screen window
 func (v *View) ScreenText(row ERow) []rune {
 	ret := spaces(v.ScreenCols)
-	txt := Text(row)
+	txt := row.Text()
 	if v.ColOffset > len(txt) {
 		return ret
 	}
@@ -74,9 +60,9 @@ func (v *View) ScreenText(row ERow) []rune {
 }
 
 // RefreshScreen redraws the editing session on Screen
-func (v *View) RefreshScreen(s *Session) {
+func (v *View) RefreshScreen(e *Editor) {
 	// clear screen
-	//editorScroll()
+	rx := v.Scroll(e)
 	ab := bytes.Buffer{}
 
 	// hide cursor
@@ -85,12 +71,12 @@ func (v *View) RefreshScreen(s *Session) {
 	// move cursor to top left
 	fmt.Fprint(&ab, "\x1b[H")
 
-	v.DrawRows(&ab, s)
-	//editorDrawStatusBar(&ab)
+	v.DrawRows(&ab, e)
+	v.DrawStatusBar(&ab, e)
 	//editorDrawStatusMsg(&ab)
 
 	// reposition cursor
-	//fmt.Fprintf(&ab, "\x1b[%d;%dH", editor.Cy-editor.RowOffset+1, editor.Rx-editor.ColOffset+1)
+	fmt.Fprintf(&ab, "\x1b[%d;%dH", e.Cy-v.RowOffset+1, rx-v.ColOffset+1)
 
 	// show cursor
 	fmt.Fprint(&ab, "\x1b[?25h")
@@ -99,24 +85,8 @@ func (v *View) RefreshScreen(s *Session) {
 
 }
 
-// DrawRows draws the editor rows on the screen
-func (v *View) DrawRows(ab *bytes.Buffer, s *Session) {
-	emptyRow := ERow("~")
-
-	for y := 0; y < v.ScreenRows-1; y++ {
-		fileRow := y + v.RowOffset
-		if fileRow >= len(s.Editor.Rows) {
-			fmt.Fprint(ab, string(v.ScreenText(emptyRow)))
-		} else {
-			fmt.Fprint(ab, string(v.ScreenText(s.Editor.Rows[fileRow]))) //editor.Rows[fileRow].ScreenText(editor.ColOffset, cfg.ScreenCols)))
-		}
-		fmt.Fprint(ab, "\r\n")
-	}
-}
-
-/*
 // CxToRx transforms cursor positions to account for tab stops
-func (row ERow) CxToRx(cx int) int {
+func CxToRx(row ERow, cx int) int {
 	rx := 0
 	for j := 0; j < cx; j++ {
 		if row[j] == '\t' {
@@ -125,6 +95,78 @@ func (row ERow) CxToRx(cx int) int {
 		rx++
 	}
 	return rx
-
 }
-*/
+
+func (v *View) Scroll(e *Editor) int {
+
+	// if we're on the last line, cursor position should be 0
+	rx := 0
+
+	// find the screen x position after expanding tabs of the current row
+	// as long as we're within the editor rows
+	if e.Cy < len(e.Rows) {
+		rx = CxToRx(e.Rows[e.Cy], e.Cx)
+	}
+
+	// if we have scrolled up beyond the current screen, move up
+	if e.Cy < v.RowOffset {
+		v.RowOffset = e.Cy
+	}
+
+	// if we have scrolled dwon below the screen, move down
+	if e.Cy >= v.RowOffset+v.ScreenRows {
+		v.RowOffset = e.Cy - v.ScreenRows + 1
+	}
+
+	// if we have scrolled left beyond hte screen, move our coloffset
+	if rx < v.ColOffset {
+		v.ColOffset = rx
+	}
+
+	if rx >= v.ColOffset+v.ScreenCols {
+		v.ColOffset = rx - v.ScreenCols + 1
+	}
+
+	return rx
+}
+
+// DrawRows draws the editor rows on the screen
+func (v *View) DrawRows(ab *bytes.Buffer, e *Editor) {
+	emptyRow := ERow("~")
+
+	for y := 0; y < v.ScreenRows-2; y++ {
+		fileRow := y + v.RowOffset
+		if fileRow >= len(e.Rows) {
+			fmt.Fprint(ab, string(v.ScreenText(emptyRow)))
+		} else {
+			fmt.Fprint(ab, string(v.ScreenText(e.Rows[fileRow]))) //editor.Rows[fileRow].ScreenText(editor.ColOffset, cfg.ScreenCols)))
+		}
+		fmt.Fprint(ab, "\r\n")
+	}
+}
+
+func (v *View) DrawStatusBar(ab *bytes.Buffer, e *Editor) {
+	fmt.Fprint(ab, "\x1b[7m")
+
+	fileName := e.FileName
+	if fileName == "" {
+		fileName = "No Name"
+	}
+	dirtyChar := ' '
+	if e.Dirty {
+		dirtyChar = '*'
+	}
+
+	leftStatusString := fmt.Sprintf("%c%.20s - %d lines", dirtyChar, fileName, len(e.Rows))
+	rightStatusString := fmt.Sprintf("%dc %d/%dr", e.Cx+1, e.Cy+1, len(e.Rows))
+	numSpaces := v.ScreenCols - len(leftStatusString) - len(rightStatusString)
+
+	if numSpaces >= 0 {
+		fmt.Fprint(ab, leftStatusString+strings.Repeat(" ", numSpaces)+rightStatusString)
+	} else {
+		fmt.Fprint(ab, (leftStatusString + rightStatusString)[:v.ScreenCols])
+	}
+
+	fmt.Fprint(ab, "\x1b[m")
+	fmt.Fprint(ab, "\r\n")
+}

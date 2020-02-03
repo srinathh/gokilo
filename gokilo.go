@@ -4,8 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"gokilo/rawmode"
+	"gokilo/terminal"
 	"os"
 )
+
+func ctrlKey(b byte) rune {
+	return rune(b & 0x1f)
+}
 
 const kiloVersion = "0.0.2"
 
@@ -43,16 +48,69 @@ func main() {
 
 	view := NewView(rows, cols)
 
-	flag.Parse()
-	session := NewSession(flag.Arg(0))
+	var e *Editor
+	//var s *Session
 
-	for {
-		view.RefreshScreen(session)
-		if err := editorProcessKeypress(); err != nil {
-			SafeExit(err)
+	flag.Parse()
+	filename := flag.Arg(0)
+
+	if flag.Arg(0) == "" {
+		e = NewEditor()
+	} else {
+		e, err = NewEditorFromFile(filename)
+		if err != nil {
+			SafeExit(fmt.Errorf("couldn't open file %s: %v", filename, err))
 		}
 	}
+	//s = NewSession(filename)
 
+	for {
+		view.RefreshScreen(e)
+
+		k, err := terminal.ReadKey()
+		if err != nil {
+			SafeExit(fmt.Errorf("Error reading from terminal: %s", err))
+		}
+
+		if k.Special == terminal.KeyNoSpl {
+			switch k.Regular {
+			case '\r':
+			//	session.Editor.InsertNewline()
+
+			case ctrlKey('l'), '\x1b':
+				break
+
+			case ctrlKey('q'):
+				//session.Quit()
+				SafeExit(nil)
+
+			case ctrlKey('s'):
+				//session.Save()
+
+			case ctrlKey('f'):
+				//editorFind()
+
+			case ctrlKey('h'), 127:
+				//session.Editor.DelChar()
+
+			default:
+				//session.Editor.InsertChar(k.Regular)
+			}
+		} else {
+			switch k.Special {
+
+			case terminal.KeyArrowDown, terminal.KeyArrowLeft, terminal.KeyArrowRight, terminal.KeyArrowUp:
+				//session.Editor.MoveCursor(k.Special)
+
+			case terminal.KeyPageUp, terminal.KeyPageDown, terminal.KeyHome, terminal.KeyEnd:
+				///session.Editor.MoveScreen(k.Special)
+
+			case terminal.KeyDelete:
+				//session.Editor.MoveCursor(terminal.KeyArrowRight)
+				//session.Editor.DelChar()
+			}
+		}
+	}
 }
 
 /*

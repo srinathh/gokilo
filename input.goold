@@ -1,8 +1,6 @@
 package main
 
-import (
-	"gokilo/terminal"
-)
+import "gokilo/terminal"
 
 func ctrlKey(b byte) rune {
 	return rune(b & 0x1f)
@@ -15,25 +13,14 @@ func editorProcessKeypress() error {
 		return err
 	}
 
-	switch k.Special {
-	case terminal.KeyNoSpl:
+	if k.Special == terminal.KeyNoSpl {
 		switch k.Regular {
+		case '\r':
+			editor.InsertNewline()
+			break
 
-		case ctrlKey('q'):
-			/*
-				if editor.Dirty && editor.QuitTimes > 0 {
-					editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", editor.QuitTimes)
-					editor.QuitTimes--
-					return nil
-				}*/
-			SafeExit(nil)
-		}
-
-	}
-	return nil
-}
-
-/*
+		case ctrlKey('l'), '\x1b':
+			break
 func editorProcessKeypress() error {
 
 	k, err := terminal.ReadKey()
@@ -50,6 +37,59 @@ func editorProcessKeypress() error {
 		case ctrlKey('l'), '\x1b':
 			break
 
+		case ctrlKey('q'):
+			if editor.Dirty && editor.QuitTimes > 0 {
+				editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", editor.QuitTimes)
+				editor.QuitTimes--
+				return nil
+			}
+			safeExit(nil)
+		case ctrlKey('s'):
+			editor.Save()
+
+		case ctrlKey('f'):
+			editorFind()
+
+		case ctrlKey('h'), 127:
+			editor.DelChar()
+		default:
+			editor.InsertChar(k.Regular)
+		}
+	} else {
+		switch k.Special {
+
+		case terminal.KeyArrowDown, terminal.KeyArrowLeft, terminal.KeyArrowRight, terminal.KeyArrowUp:
+			editorMoveCursor(k.Special)
+
+		case terminal.KeyPageUp:
+			editor.Cy = editor.RowOffset
+			for j := 0; j < cfg.ScreenRows; j++ {
+				editorMoveCursor(terminal.KeyArrowUp)
+			}
+		case terminal.KeyPageDown:
+			editor.Cy = editor.RowOffset + cfg.ScreenRows - 1
+			if editor.Cy > len(editor.Rows) {
+				editor.Cy = len(editor.Rows)
+			}
+			for j := 0; j < cfg.ScreenRows; j++ {
+				editorMoveCursor(terminal.KeyArrowDown)
+			}
+		case terminal.KeyHome:
+			editor.Cx = 0
+		case terminal.KeyEnd:
+			if editor.Cy < len(editor.Rows) {
+				editor.Cx = len(editor.Rows[editor.Cy])
+			}
+
+		case terminal.KeyDelete:
+			editorMoveCursor(terminal.KeyArrowRight)
+			editor.DelChar()
+		}
+	}
+
+	editor.QuitTimes = kiloQuitTimes
+	return nil
+}
 		case ctrlKey('q'):
 			if editor.Dirty && editor.QuitTimes > 0 {
 				editorSetStatusMsg("WARNING!!! Unsaved changes. Press Ctrl-Q %d more times to quit.", editor.QuitTimes)
@@ -150,6 +190,7 @@ func editorMoveCursor(key int) {
 	}
 }
 
+/*
 type editorPromptCallback func(string, terminal.Key)
 
 func editorPrompt(prompt string, callback editorPromptCallback) string {
