@@ -14,6 +14,8 @@ const startMsg = "HELP: Ctrl + S to save | Ctrl + Q to exit | Ctrl + F to find"
 
 const kiloTabStop = 4
 
+const numStatusRows = 2
+
 // View handles display of editor, status and prompts on screen
 type View struct {
 	ScreenRows    int
@@ -97,6 +99,7 @@ func CxToRx(row ERow, cx int) int {
 	return rx
 }
 
+// Scroll scrolls the editor to capture the full view
 func (v *View) Scroll(e *Editor) int {
 
 	// if we're on the last line, cursor position should be 0
@@ -114,8 +117,8 @@ func (v *View) Scroll(e *Editor) int {
 	}
 
 	// if we have scrolled dwon below the screen, move down
-	if e.Cy >= v.RowOffset+v.ScreenRows {
-		v.RowOffset = e.Cy - v.ScreenRows + 1
+	if e.Cy >= v.RowOffset+(v.ScreenRows-numStatusRows) {
+		v.RowOffset = e.Cy - (v.ScreenRows - numStatusRows) + 1
 	}
 
 	// if we have scrolled left beyond hte screen, move our coloffset
@@ -134,7 +137,7 @@ func (v *View) Scroll(e *Editor) int {
 func (v *View) DrawRows(ab *bytes.Buffer, e *Editor) {
 	emptyRow := ERow("~")
 
-	for y := 0; y < v.ScreenRows-2; y++ {
+	for y := 0; y < v.ScreenRows-numStatusRows; y++ {
 		fileRow := y + v.RowOffset
 		if fileRow >= len(e.Rows) {
 			fmt.Fprint(ab, string(v.ScreenText(emptyRow)))
@@ -145,6 +148,7 @@ func (v *View) DrawRows(ab *bytes.Buffer, e *Editor) {
 	}
 }
 
+// DrawStatusBar draws the status bar
 func (v *View) DrawStatusBar(ab *bytes.Buffer, e *Editor) {
 	fmt.Fprint(ab, "\x1b[7m")
 
