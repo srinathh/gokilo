@@ -59,6 +59,65 @@ func NewEditorFromFile(filename string) (*Editor, error) {
 	}, nil
 }
 
+// CursorUp moves the cursor up as long as row number is non zero
+func (e *Editor) CursorUp() {
+	if e.Cy > 0 {
+		e.Cy--
+	}
+	e.ResetX()
+}
+
+// CursorDown moves the cursor down till one line past the last line
+func (e *Editor) CursorDown() {
+	if e.Cy < len(e.Rows) {
+		e.Cy++
+	}
+	e.ResetX()
+}
+
+// CursorLeft moves the cursor left. If at col 0 & any line other thant
+// the first line, it moves to the previous line
+func (e *Editor) CursorLeft() {
+
+	if e.Cx > 0 {
+		e.Cx--
+	} else if e.Cy > 0 {
+		e.Cy--
+		e.Cx = len(e.Rows[e.Cy])
+	}
+}
+
+// CursorRight moves the cursor right & wraps past EOL to col 0
+func (e *Editor) CursorRight() {
+	// right moves only if we're within a valid line.
+	// for past EOF, there's no movement
+	if e.Cy >= len(e.Rows) {
+		return
+	}
+	if e.Cx < len(e.Rows[e.Cy]) {
+		e.Cx++
+	} else if e.Cx == len(e.Rows[e.Cy]) {
+		e.Cy++
+		e.Cx = 0
+	}
+}
+
+// ResetX sets the cursor X position to a valid position after moving y
+func (e *Editor) ResetX() {
+
+	// if we moved past last row, set cursor to 0
+	if e.Cy >= len(e.Rows) {
+		e.Cx = 0
+		return
+	}
+
+	// we allow moving to 1 pos past the last character
+	rowLen := len(e.Rows[e.Cy])
+	if e.Cx > rowLen {
+		e.Cx = len(e.Rows[e.Cy])
+	}
+}
+
 /*
 func editorMoveCursor(key int) {
 
@@ -88,9 +147,6 @@ func editorMoveCursor(key int) {
 			editor.Cy++
 		}
 	case terminal.KeyArrowUp:
-		if editor.Cy > 0 {
-			editor.Cy--
-		}
 	}
 
 	// we may have moved to a different row, so reset conditions

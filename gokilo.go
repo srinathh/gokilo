@@ -86,9 +86,7 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 	if k.Special == terminal.KeyNoSpl {
 		switch k.Regular {
 		case '\r':
-		//	session.Editor.InsertNewline()
-
-		case ctrlKey('l'), '\x1b':
+			//	session.Editor.InsertNewline()
 			break
 
 		case ctrlKey('q'):
@@ -110,8 +108,16 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 	} else {
 		switch k.Special {
 
-		case terminal.KeyArrowDown, terminal.KeyArrowLeft, terminal.KeyArrowRight, terminal.KeyArrowUp:
-			//session.Editor.MoveCursor(k.Special)
+		case terminal.KeyArrowDown:
+			e.CursorDown()
+
+		case terminal.KeyArrowLeft:
+			e.CursorLeft()
+
+		case terminal.KeyArrowRight:
+			e.CursorRight()
+		case terminal.KeyArrowUp:
+			e.CursorUp()
 
 		case terminal.KeyPageUp, terminal.KeyPageDown, terminal.KeyHome, terminal.KeyEnd:
 			///session.Editor.MoveScreen(k.Special)
