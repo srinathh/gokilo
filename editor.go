@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ERow represents a line of text in a file
 type ERow []rune
@@ -118,6 +120,23 @@ func (e *Editor) CursorRight() {
 func (e *Editor) CursorEnd() {
 	if e.Cy < len(e.Rows) {
 		e.Cx = len(e.Rows[e.Cy])
+	}
+}
+
+func (e *Editor) CursorPageUp(screenRows int, rowOffset int) {
+	e.Cy = rowOffset
+	for j := 0; j < screenRows; j++ {
+		e.CursorUp()
+	}
+}
+
+func (e *Editor) CursorPageDown(screenRows int, rowOffset int) {
+	e.Cy = rowOffset + screenRows - 1
+	if e.Cy > len(e.Rows) {
+		e.Cy = len(e.Rows)
+	}
+	for j := 0; j < screenRows; j++ {
+		e.CursorDown()
 	}
 }
 

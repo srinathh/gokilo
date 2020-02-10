@@ -126,8 +126,11 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 		case terminal.KeyEnd:
 			e.CursorEnd()
 
-		case terminal.KeyPageUp, terminal.KeyPageDown:
-			///session.Editor.MoveScreen(k.Special)
+		case terminal.KeyPageUp:
+			e.CursorPageUp(v.ScreenRows, v.RowOffset)
+
+		case terminal.KeyPageDown:
+			e.CursorPageDown(v.ScreenRows, v.RowOffset)
 
 		case terminal.KeyDelete:
 			//session.Editor.MoveCursor(terminal.KeyArrowRight)
