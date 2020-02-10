@@ -87,18 +87,6 @@ func (v *View) RefreshScreen(e *Editor) {
 
 }
 
-// CxToRx transforms cursor positions to account for tab stops
-func CxToRx(row ERow, cx int) int {
-	rx := 0
-	for j := 0; j < cx; j++ {
-		if row[j] == '\t' {
-			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
-		}
-		rx++
-	}
-	return rx
-}
-
 // Scroll scrolls the editor to capture the full view
 func (v *View) Scroll(e *Editor) int {
 
@@ -108,7 +96,7 @@ func (v *View) Scroll(e *Editor) int {
 	// find the screen x position after expanding tabs of the current row
 	// as long as we're within the editor rows
 	if e.Cy < len(e.Rows) {
-		rx = CxToRx(e.Rows[e.Cy], e.Cx)
+		rx = e.Rows[e.Cy].CxToRx(e.Cx)
 	}
 
 	// if we have scrolled up beyond the current screen, move up

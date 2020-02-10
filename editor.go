@@ -19,6 +19,18 @@ func (row ERow) Text() ERow {
 	return dest
 }
 
+// CxToRx transforms cursor positions to account for tab stops
+func (row ERow) CxToRx(cx int) int {
+	rx := 0
+	for j := 0; j < cx; j++ {
+		if row[j] == '\t' {
+			rx = (rx + kiloTabStop - 1) - (rx % kiloTabStop)
+		}
+		rx++
+	}
+	return rx
+}
+
 // Editor represents the data in the being edited in memory
 type Editor struct {
 	Cx, Cy   int    // Cx and Cy represent current cursor position
@@ -51,7 +63,7 @@ func NewEditorFromFile(filename string) (*Editor, error) {
 	}
 
 	return &Editor{
-		FileName: "",
+		FileName: filename,
 		Dirty:    false,
 		Cx:       0,
 		Cy:       0,
