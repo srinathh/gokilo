@@ -114,6 +114,33 @@ func (e *Editor) CursorRight() {
 	}
 }
 
+// CursorEnd moves the cursor to end of line
+func (e *Editor) CursorEnd() {
+	if e.Cy < len(e.Rows) {
+		e.Cx = len(e.Rows[e.Cy])
+	}
+}
+
+// CursorHome moves the cursor to col 0
+func (e *Editor) CursorHome() {
+	e.Cx = 0
+	/*
+	   case terminal.KeyPageUp:
+	   	editor.Cy = editor.RowOffset
+	   	for j := 0; j < cfg.ScreenRows; j++ {
+	   		editorMoveCursor(terminal.KeyArrowUp)
+	   	}
+	   case terminal.KeyPageDown:
+	   	editor.Cy = editor.RowOffset + cfg.ScreenRows - 1
+	   	if editor.Cy > len(editor.Rows) {
+	   		editor.Cy = len(editor.Rows)
+	   	}
+	   	for j := 0; j < cfg.ScreenRows; j++ {
+	   		editorMoveCursor(terminal.KeyArrowDown)
+	   	}
+	*/
+}
+
 // ResetX sets the cursor X position to a valid position after moving y
 func (e *Editor) ResetX() {
 
