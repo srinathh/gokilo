@@ -143,21 +143,6 @@ func (e *Editor) CursorPageDown(screenRows int, rowOffset int) {
 // CursorHome moves the cursor to col 0
 func (e *Editor) CursorHome() {
 	e.Cx = 0
-	/*
-	   case terminal.KeyPageUp:
-	   	editor.Cy = editor.RowOffset
-	   	for j := 0; j < cfg.ScreenRows; j++ {
-	   		editorMoveCursor(terminal.KeyArrowUp)
-	   	}
-	   case terminal.KeyPageDown:
-	   	editor.Cy = editor.RowOffset + cfg.ScreenRows - 1
-	   	if editor.Cy > len(editor.Rows) {
-	   		editor.Cy = len(editor.Rows)
-	   	}
-	   	for j := 0; j < cfg.ScreenRows; j++ {
-	   		editorMoveCursor(terminal.KeyArrowDown)
-	   	}
-	*/
 }
 
 // ResetX sets the cursor X position to a valid position after moving y
