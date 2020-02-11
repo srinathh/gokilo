@@ -141,7 +141,22 @@ func editorProcessKeypress() error {
 	}
 
 	editor.QuitTimes = kiloQuitTimes
-	return nil
+	return nil// InsertNewline inserts a new line at the cursor position
+func (e *Editor) InsertNewline() {
+	if e.Cx == 0 {
+		e.InsertRow(e.Cy, "")
+		return
+	}
+
+	moveChars := string(e.Rows[e.Cy][e.Cx:])
+
+	e.Rows[e.Cy] = e.Rows[e.Cy][:e.Cx]
+
+	e.InsertRow(e.Cy+1, moveChars)
+
+	e.Cy++
+	e.Cx = 0
+}
 }
 
 func editorMoveCursor(key int) {

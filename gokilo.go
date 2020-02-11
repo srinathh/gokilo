@@ -103,7 +103,7 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 			//session.Editor.DelChar()
 
 		default:
-			//session.Editor.InsertChar(k.Regular)
+			e.InsertChar(k.Regular)
 		}
 	} else {
 		switch k.Special {

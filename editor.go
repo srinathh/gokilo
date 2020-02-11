@@ -123,6 +123,7 @@ func (e *Editor) CursorEnd() {
 	}
 }
 
+// CursorPageUp moves the cursor one screen up
 func (e *Editor) CursorPageUp(screenRows int, rowOffset int) {
 	e.Cy = rowOffset
 	for j := 0; j < screenRows; j++ {
@@ -130,6 +131,7 @@ func (e *Editor) CursorPageUp(screenRows int, rowOffset int) {
 	}
 }
 
+// CursorPageDown moves the cursor one screen down
 func (e *Editor) CursorPageDown(screenRows int, rowOffset int) {
 	e.Cy = rowOffset + screenRows - 1
 	if e.Cy > len(e.Rows) {
@@ -161,47 +163,55 @@ func (e *Editor) ResetX() {
 	}
 }
 
-/*
-func editorMoveCursor(key int) {
+// InsertChar inserts a character at a given location
+func (e *Editor) InsertChar(c rune) {
 
-	pastEOF := editor.Cy >= len(editor.Rows)
-
-	switch key {
-	case terminal.KeyArrowLeft:
-		if editor.Cx > 0 {
-			editor.Cx--
-		} else if editor.Cy > 0 {
-			editor.Cy--
-			editor.Cx = len(editor.Rows[editor.Cy])
-		}
-	case terminal.KeyArrowRight:
-		// right moves only if we're within a valid line.
-		// for past EOF, there's no movement
-		if !pastEOF {
-			if editor.Cx < len(editor.Rows[editor.Cy]) {
-				editor.Cx++
-			} else if editor.Cx == len(editor.Rows[editor.Cy]) {
-				editor.Cy++
-				editor.Cx = 0
-			}
-		}
-	case terminal.KeyArrowDown:
-		if editor.Cy < len(editor.Rows) {
-			editor.Cy++
-		}
-	case terminal.KeyArrowUp:
+	// if we're at the last line, insert a new row
+	if e.Cy == len(e.Rows) {
+		e.InsertRow(len(e.Rows), "")
 	}
 
-	// we may have moved to a different row, so reset conditions
-	pastEOF = editor.Cy >= len(editor.Rows)
+	// store a reference to the working row to improve readability
+	src := e.Rows[e.Cy]
 
-	rowLen := 0
-	if !pastEOF {
-		rowLen = len(editor.Rows[editor.Cy])
-	}
+	dest := make([]rune, len(src)+1)
+	copy(dest, src[:e.Cx])
+	copy(dest[e.Cx+1:], src[e.Cx:])
+	dest[e.Cx] = c
 
-	if editor.Cx > rowLen {
-		editor.Cx = rowLen
-	}
+	e.Rows[e.Cy] = dest
+	e.Dirty = true
+	e.Cx++
 }
-*/
+
+// InsertRow inserts a row at a given index
+func (e *Editor) InsertRow(rowidx int, s string) {
+	if rowidx < 0 || rowidx > len(e.Rows) {
+		return
+	}
+
+	row := []rune(s)
+
+	e.Rows = append(e.Rows, ERow{})
+	copy(e.Rows[rowidx+1:], e.Rows[rowidx:])
+	e.Rows[rowidx] = row
+
+	e.Dirty = true
+}
+
+// InsertNewline inserts a new line at the cursor position
+func (e *Editor) InsertNewline() {
+	if e.Cx == 0 {
+		e.InsertRow(e.Cy, "")
+		e.Dirty = true
+		return
+	}
+
+	moveChars := string(e.Rows[e.Cy][e.Cx:])
+	e.Rows[e.Cy] = e.Rows[e.Cy][:e.Cx]
+	e.InsertRow(e.Cy+1, moveChars)
+	e.Dirty = true
+
+	e.Cy++
+	e.Cx = 0
+}
