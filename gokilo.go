@@ -86,7 +86,7 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 	if k.Special == terminal.KeyNoSpl {
 		switch k.Regular {
 		case '\r':
-			//	session.Editor.InsertNewline()
+			e.InsertNewline()
 			break
 
 		case ctrlKey('q'):
@@ -100,7 +100,7 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 			//editorFind()
 
 		case ctrlKey('h'), 127:
-			//session.Editor.DelChar()
+			e.DelChar()
 
 		default:
 			e.InsertChar(k.Regular)
@@ -133,8 +133,8 @@ func dispatchKey(k terminal.Key, s *Session, v *View, e *Editor) {
 			e.CursorPageDown(v.ScreenRows, v.RowOffset)
 
 		case terminal.KeyDelete:
-			//session.Editor.MoveCursor(terminal.KeyArrowRight)
-			//session.Editor.DelChar()
+			e.CursorRight()
+			e.DelChar()
 		}
 	}
 }

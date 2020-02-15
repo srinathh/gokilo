@@ -215,3 +215,47 @@ func (e *Editor) InsertNewline() {
 	e.Cy++
 	e.Cx = 0
 }
+
+// DelChar deletes a character at current cursor location
+func (e *Editor) DelChar() {
+	// if the cursor is at the line beyond the end of text
+	// then move it to the last line
+	if e.Cy == len(e.Rows) {
+		if len(e.Rows) == 0 {
+			return
+		}
+		e.Cy = len(e.Rows) - 1
+		e.Cx = len(e.Rows[e.Cy])
+	}
+
+	// if at the beginning of the text, then do nothing
+	if e.Cx == 0 && e.Cy == 0 {
+		return
+	}
+
+	// different handling for at the beginning of the line or middle of line
+	if e.Cx > 0 {
+		row := e.Rows[e.Cy]
+		copy(row[e.Cx-1:], row[e.Cx:])
+		row = row[:len(row)-1]
+		e.Rows[e.Cy] = row
+		e.Cx--
+	} else {
+		e.Cx = len(e.Rows[e.Cy-1])
+		e.Rows[e.Cy-1] = append(e.Rows[e.Cy-1], e.Rows[e.Cy]...)
+		e.DelRow(e.Cy)
+		e.Cy--
+	}
+	e.Dirty = true
+}
+
+// DelRow deletes a given row
+func (e *Editor) DelRow(rowidx int) {
+	if rowidx < 0 || rowidx >= len(e.Rows) {
+		return
+	}
+
+	copy(e.Rows[rowidx:], e.Rows[rowidx+1:])
+	e.Rows = e.Rows[:len(e.Rows)-1]
+	e.Dirty = true
+}
