@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 )
 
 var tabSpaces = []rune(strings.Repeat(" ", kiloTabStop))
@@ -18,24 +17,20 @@ const numStatusRows = 2
 
 // View handles display of editor, status and prompts on screen
 type View struct {
-	ScreenRows    int
-	ScreenCols    int
-	RowOffset     int
-	ColOffset     int
-	StatusMsg     string // status message
-	StatusMsgTime time.Time
-	spaces        []rune
+	ScreenRows int
+	ScreenCols int
+	RowOffset  int
+	ColOffset  int
+	spaces     []rune
 }
 
 // NewView creates a view
 func NewView(rows, cols int) *View {
 	return &View{
-		ScreenRows:    rows,
-		ScreenCols:    cols,
-		RowOffset:     0,
-		ColOffset:     0,
-		StatusMsg:     startMsg,
-		StatusMsgTime: time.Now(),
+		ScreenRows: rows,
+		ScreenCols: cols,
+		RowOffset:  0,
+		ColOffset:  0,
 	}
 }
 
