@@ -9,6 +9,17 @@ of small steps. At present in GoKilo, chapters
 [1 through 6](https://viewsourcecode.org/snaptoken/kilo/index.html) 
 of the tutorial are complete and we have a fully functional basic text edtor. 
 
+### Update
+
+GoKilo has been substantially re-written to a much more idiomatic Go style
+from the orivinal version that closely mirrored the C original while retaining
+much of the original logic. However, two substantial changes were made:
+1. A small State Machine added to generalize handling of state changes between 
+   editing, save prompt for new files, quit prompt in case of unsaved changes
+   and find interaction vs. using embedded screen & keyboard logic
+2. A line editor derived from the full Editor used to handle user prompts 
+   vs. custom key-handling in find function in the original
+
 Extra Functionality in GoKilo
 -----------------------------
 1. Search functionality has been made case-insensitive by default
@@ -16,19 +27,14 @@ Extra Functionality in GoKilo
 
 Roadmap
 -------
-1. **Refactoring to Idiomatic Go:** I then plan to refactor the code from a 
-   C style to a more idiomatic Go style using Go paradigms
 
-2. **Porting over tutorial to Go:** I plan to then re-write and release
+1. **Porting over tutorial to Go:** I plan to then re-write and release
    the tutorial to work with Go version of kilo. Given how close Go is 
    to C, it should largely port over in sequence but will probalby be simpler
    with fewer steps due to garbage collection and type safety in Go
 
-3. **Syntax Highlighting**: I haven't yet decided whether to add syntax highlighting to GoKilo
+2. **Syntax Highlighting**: I haven't yet decided whether to add syntax highlighting to GoKilo
 
-Limitations
------------
-On Windows, to cancel Search function, user needs to press Escape twice.
 
 Dog-fooding
 -----------
