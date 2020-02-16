@@ -85,6 +85,7 @@ func (v *View) RefreshScreen(e *Editor, statusMsg string, prompt *LineEditor) {
 
 }
 
+// DrawStatusMsg draws the status message on screen
 func (v *View) DrawStatusMsg(ab *bytes.Buffer, statusMsg string) {
 	fmt.Fprint(ab, "\x1b[K") // clear the line
 	if len(statusMsg) < v.ScreenCols {
