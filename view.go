@@ -57,7 +57,7 @@ func (v *View) ScreenText(row ERow) []rune {
 }
 
 // RefreshScreen redraws the editing session on Screen
-func (v *View) RefreshScreen(e *Editor) {
+func (v *View) RefreshScreen(e *Editor, statusMsg string, prompt *LineEditor) {
 	// clear screen
 	rx := v.Scroll(e)
 	ab := bytes.Buffer{}
@@ -70,16 +70,28 @@ func (v *View) RefreshScreen(e *Editor) {
 
 	v.DrawRows(&ab, e)
 	v.DrawStatusBar(&ab, e)
-	//editorDrawStatusMsg(&ab)
-
-	// reposition cursor
-	fmt.Fprintf(&ab, "\x1b[%d;%dH", e.Cy-v.RowOffset+1, rx-v.ColOffset+1)
+	v.DrawStatusMsg(&ab, statusMsg)
+	if prompt != nil {
+		fmt.Fprint(&ab, string(prompt.Row.Text()))
+		fmt.Fprintf(&ab, "\x1b[%d;%dH", v.ScreenRows, len(statusMsg)+prompt.Cx)
+	} else {
+		fmt.Fprintf(&ab, "\x1b[%d;%dH", e.Cy-v.RowOffset+1, rx-v.ColOffset+1)
+	}
 
 	// show cursor
 	fmt.Fprint(&ab, "\x1b[?25h")
 
 	os.Stdout.Write(ab.Bytes())
 
+}
+
+func (v *View) DrawStatusMsg(ab *bytes.Buffer, statusMsg string) {
+	fmt.Fprint(ab, "\x1b[K") // clear the line
+	if len(statusMsg) < v.ScreenCols {
+		fmt.Fprint(ab, statusMsg)
+	} else {
+		fmt.Fprint(ab, statusMsg[:v.ScreenCols])
+	}
 }
 
 // Scroll scrolls the editor to capture the full view
