@@ -17,8 +17,9 @@ const numStatusRows = 2
 
 // View handles display of editor, status and prompts on screen
 type View struct {
-	ScreenRows int
-	ScreenCols int
+	//ScreenRows int
+	//ScreenCols int
+	ScreenSize Point
 	RowOffset  int
 	ColOffset  int
 	spaces     []rune
@@ -27,8 +28,7 @@ type View struct {
 // NewView creates a view
 func NewView(rows, cols int) *View {
 	return &View{
-		ScreenRows: rows,
-		ScreenCols: cols,
+		ScreenSize: Point{Row: rows, Col: cols},
 		RowOffset:  0,
 		ColOffset:  0,
 	}
@@ -44,13 +44,13 @@ func spaces(width int) ERow {
 
 // ScreenText returns a line of text offset to match screen window
 func (v *View) ScreenText(row ERow) []rune {
-	ret := spaces(v.ScreenCols)
+	ret := spaces(v.ScreenSize.Col)
 	txt := row.Text()
 	if v.ColOffset > len(txt) {
 		return ret
 	}
 
-	for j := v.ColOffset; j < len(txt) && j < v.ColOffset+v.ScreenCols; j++ {
+	for j := v.ColOffset; j < len(txt) && j < v.ColOffset+v.ScreenSize.Col; j++ {
 		ret[j-v.ColOffset] = txt[j]
 	}
 	return ret
@@ -73,9 +73,9 @@ func (v *View) RefreshScreen(e *Editor, statusMsg string, prompt *LineEditor) {
 	v.DrawStatusMsg(&ab, statusMsg)
 	if prompt != nil {
 		fmt.Fprint(&ab, string(prompt.Row.Text()))
-		fmt.Fprintf(&ab, "\x1b[%d;%dH", v.ScreenRows, len(statusMsg)+prompt.Cx+1)
+		fmt.Fprintf(&ab, "\x1b[%d;%dH", v.ScreenSize.Row, len(statusMsg)+prompt.Cx+1)
 	} else {
-		fmt.Fprintf(&ab, "\x1b[%d;%dH", e.Cy-v.RowOffset+1, rx-v.ColOffset+1)
+		fmt.Fprintf(&ab, "\x1b[%d;%dH", e.Cursor.Row-v.RowOffset+1, rx-v.ColOffset+1)
 	}
 
 	// show cursor
@@ -88,10 +88,10 @@ func (v *View) RefreshScreen(e *Editor, statusMsg string, prompt *LineEditor) {
 // DrawStatusMsg draws the status message on screen
 func (v *View) DrawStatusMsg(ab *bytes.Buffer, statusMsg string) {
 	fmt.Fprint(ab, "\x1b[K") // clear the line
-	if len(statusMsg) < v.ScreenCols {
+	if len(statusMsg) < v.ScreenSize.Col {
 		fmt.Fprint(ab, statusMsg)
 	} else {
-		fmt.Fprint(ab, statusMsg[:v.ScreenCols])
+		fmt.Fprint(ab, statusMsg[:v.ScreenSize.Col])
 	}
 }
 
@@ -103,18 +103,18 @@ func (v *View) Scroll(e *Editor) int {
 
 	// find the screen x position after expanding tabs of the current row
 	// as long as we're within the editor rows
-	if e.Cy < len(e.Rows) {
-		rx = e.Rows[e.Cy].CxToRx(e.Cx)
+	if e.Cursor.Row < len(e.Rows) {
+		rx = e.Rows[e.Cursor.Row].CxToRx(e.Cursor.Col)
 	}
 
 	// if we have scrolled up beyond the current screen, move up
-	if e.Cy < v.RowOffset {
-		v.RowOffset = e.Cy
+	if e.Cursor.Row < v.RowOffset {
+		v.RowOffset = e.Cursor.Row
 	}
 
 	// if we have scrolled dwon below the screen, move down
-	if e.Cy >= v.RowOffset+(v.ScreenRows-numStatusRows) {
-		v.RowOffset = e.Cy - (v.ScreenRows - numStatusRows) + 1
+	if e.Cursor.Row >= v.RowOffset+(v.ScreenSize.Row-numStatusRows) {
+		v.RowOffset = e.Cursor.Row - (v.ScreenSize.Row - numStatusRows) + 1
 	}
 
 	// if we have scrolled left beyond hte screen, move our coloffset
@@ -122,8 +122,8 @@ func (v *View) Scroll(e *Editor) int {
 		v.ColOffset = rx
 	}
 
-	if rx >= v.ColOffset+v.ScreenCols {
-		v.ColOffset = rx - v.ScreenCols + 1
+	if rx >= v.ColOffset+v.ScreenSize.Col {
+		v.ColOffset = rx - v.ScreenSize.Col + 1
 	}
 
 	return rx
@@ -133,7 +133,7 @@ func (v *View) Scroll(e *Editor) int {
 func (v *View) DrawRows(ab *bytes.Buffer, e *Editor) {
 	emptyRow := ERow("~")
 
-	for y := 0; y < v.ScreenRows-numStatusRows; y++ {
+	for y := 0; y < v.ScreenSize.Row-numStatusRows; y++ {
 		fileRow := y + v.RowOffset
 		if fileRow >= len(e.Rows) {
 			fmt.Fprint(ab, string(v.ScreenText(emptyRow)))
@@ -158,13 +158,13 @@ func (v *View) DrawStatusBar(ab *bytes.Buffer, e *Editor) {
 	}
 
 	leftStatusString := fmt.Sprintf("%c%.20s - %d lines", dirtyChar, fileName, len(e.Rows))
-	rightStatusString := fmt.Sprintf("%dc %d/%dr", e.Cx+1, e.Cy+1, len(e.Rows))
-	numSpaces := v.ScreenCols - len(leftStatusString) - len(rightStatusString)
+	rightStatusString := fmt.Sprintf("%dc %d/%dr", e.Cursor.Col+1, e.Cursor.Row+1, len(e.Rows))
+	numSpaces := v.ScreenSize.Col - len(leftStatusString) - len(rightStatusString)
 
 	if numSpaces >= 0 {
 		fmt.Fprint(ab, leftStatusString+strings.Repeat(" ", numSpaces)+rightStatusString)
 	} else {
-		fmt.Fprint(ab, (leftStatusString + rightStatusString)[:v.ScreenCols])
+		fmt.Fprint(ab, (leftStatusString + rightStatusString)[:v.ScreenSize.Col])
 	}
 
 	fmt.Fprint(ab, "\x1b[m")

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gokilo/runes"
 )
 
 // ERow represents a line of text in a file
@@ -35,7 +36,8 @@ func (row ERow) CxToRx(cx int) int {
 
 // Editor represents the data in the being edited in memory
 type Editor struct {
-	Cx, Cy   int    // Cx and Cy represent current cursor position
+	//Cx, Cy   int    // Cx and Cy represent current cursor position
+	Cursor   Point
 	Rows     []ERow // Rows represent the textual data
 	Dirty    bool   // has the file been edited
 	FileName string // the path to the file being edited. Could be empty string
@@ -46,9 +48,10 @@ func NewEditor() *Editor {
 	return &Editor{
 		FileName: "",
 		Dirty:    false,
-		Cx:       0,
-		Cy:       0,
-		Rows:     []ERow{},
+		Cursor:   Point{0, 0},
+		//Cx:       0,
+		//Cy:       0,
+		Rows: []ERow{},
 	}
 }
 
@@ -67,24 +70,23 @@ func NewEditorFromFile(filename string) (*Editor, error) {
 	return &Editor{
 		FileName: filename,
 		Dirty:    false,
-		Cx:       0,
-		Cy:       0,
+		Cursor:   Point{0, 0},
 		Rows:     rows,
 	}, nil
 }
 
 // CursorUp moves the cursor up as long as row number is non zero
 func (e *Editor) CursorUp() {
-	if e.Cy > 0 {
-		e.Cy--
+	if e.Cursor.Row > 0 {
+		e.Cursor.Row--
 	}
 	e.ResetX()
 }
 
 // CursorDown moves the cursor down till one line past the last line
 func (e *Editor) CursorDown() {
-	if e.Cy < len(e.Rows) {
-		e.Cy++
+	if e.Cursor.Row < len(e.Rows) {
+		e.Cursor.Row++
 	}
 	e.ResetX()
 }
@@ -93,11 +95,11 @@ func (e *Editor) CursorDown() {
 // the first line, it moves to the previous line
 func (e *Editor) CursorLeft() {
 
-	if e.Cx > 0 {
-		e.Cx--
-	} else if e.Cy > 0 {
-		e.Cy--
-		e.Cx = len(e.Rows[e.Cy])
+	if e.Cursor.Col > 0 {
+		e.Cursor.Col--
+	} else if e.Cursor.Row > 0 {
+		e.Cursor.Row--
+		e.Cursor.Col = len(e.Rows[e.Cursor.Row])
 	}
 }
 
@@ -105,27 +107,27 @@ func (e *Editor) CursorLeft() {
 func (e *Editor) CursorRight() {
 	// right moves only if we're within a valid line.
 	// for past EOF, there's no movement
-	if e.Cy >= len(e.Rows) {
+	if e.Cursor.Row >= len(e.Rows) {
 		return
 	}
-	if e.Cx < len(e.Rows[e.Cy]) {
-		e.Cx++
-	} else if e.Cx == len(e.Rows[e.Cy]) {
-		e.Cy++
-		e.Cx = 0
+	if e.Cursor.Col < len(e.Rows[e.Cursor.Row]) {
+		e.Cursor.Col++
+	} else if e.Cursor.Col == len(e.Rows[e.Cursor.Row]) {
+		e.Cursor.Row++
+		e.Cursor.Col = 0
 	}
 }
 
 // CursorEnd moves the cursor to end of line
 func (e *Editor) CursorEnd() {
-	if e.Cy < len(e.Rows) {
-		e.Cx = len(e.Rows[e.Cy])
+	if e.Cursor.Row < len(e.Rows) {
+		e.Cursor.Col = len(e.Rows[e.Cursor.Row])
 	}
 }
 
 // CursorPageUp moves the cursor one screen up
 func (e *Editor) CursorPageUp(screenRows int, rowOffset int) {
-	e.Cy = rowOffset
+	e.Cursor.Row = rowOffset
 	for j := 0; j < screenRows; j++ {
 		e.CursorUp()
 	}
@@ -133,9 +135,9 @@ func (e *Editor) CursorPageUp(screenRows int, rowOffset int) {
 
 // CursorPageDown moves the cursor one screen down
 func (e *Editor) CursorPageDown(screenRows int, rowOffset int) {
-	e.Cy = rowOffset + screenRows - 1
-	if e.Cy > len(e.Rows) {
-		e.Cy = len(e.Rows)
+	e.Cursor.Row = rowOffset + screenRows - 1
+	if e.Cursor.Row > len(e.Rows) {
+		e.Cursor.Row = len(e.Rows)
 	}
 	for j := 0; j < screenRows; j++ {
 		e.CursorDown()
@@ -144,22 +146,22 @@ func (e *Editor) CursorPageDown(screenRows int, rowOffset int) {
 
 // CursorHome moves the cursor to col 0
 func (e *Editor) CursorHome() {
-	e.Cx = 0
+	e.Cursor.Col = 0
 }
 
 // ResetX sets the cursor X position to a valid position after moving y
 func (e *Editor) ResetX() {
 
 	// if we moved past last row, set cursor to 0
-	if e.Cy >= len(e.Rows) {
-		e.Cx = 0
+	if e.Cursor.Row >= len(e.Rows) {
+		e.Cursor.Col = 0
 		return
 	}
 
 	// we allow moving to 1 pos past the last character
-	rowLen := len(e.Rows[e.Cy])
-	if e.Cx > rowLen {
-		e.Cx = len(e.Rows[e.Cy])
+	rowLen := len(e.Rows[e.Cursor.Row])
+	if e.Cursor.Col > rowLen {
+		e.Cursor.Col = len(e.Rows[e.Cursor.Row])
 	}
 }
 
@@ -167,21 +169,21 @@ func (e *Editor) ResetX() {
 func (e *Editor) InsertChar(c rune) {
 
 	// if we're at the last line, insert a new row
-	if e.Cy == len(e.Rows) {
+	if e.Cursor.Row == len(e.Rows) {
 		e.InsertRow(len(e.Rows), "")
 	}
 
 	// store a reference to the working row to improve readability
-	src := e.Rows[e.Cy]
+	src := e.Rows[e.Cursor.Row]
 
 	dest := make([]rune, len(src)+1)
-	copy(dest, src[:e.Cx])
-	copy(dest[e.Cx+1:], src[e.Cx:])
-	dest[e.Cx] = c
+	copy(dest, src[:e.Cursor.Col])
+	copy(dest[e.Cursor.Col+1:], src[e.Cursor.Col:])
+	dest[e.Cursor.Col] = c
 
-	e.Rows[e.Cy] = dest
+	e.Rows[e.Cursor.Row] = dest
 	e.Dirty = true
-	e.Cx++
+	e.Cursor.Col++
 }
 
 // InsertRow inserts a row at a given index
@@ -201,50 +203,50 @@ func (e *Editor) InsertRow(rowidx int, s string) {
 
 // InsertNewline inserts a new line at the cursor position
 func (e *Editor) InsertNewline() {
-	if e.Cx == 0 {
-		e.InsertRow(e.Cy, "")
+	if e.Cursor.Col == 0 {
+		e.InsertRow(e.Cursor.Row, "")
 		e.Dirty = true
 		return
 	}
 
-	moveChars := string(e.Rows[e.Cy][e.Cx:])
-	e.Rows[e.Cy] = e.Rows[e.Cy][:e.Cx]
-	e.InsertRow(e.Cy+1, moveChars)
+	moveChars := string(e.Rows[e.Cursor.Row][e.Cursor.Col:])
+	e.Rows[e.Cursor.Row] = e.Rows[e.Cursor.Row][:e.Cursor.Col]
+	e.InsertRow(e.Cursor.Row+1, moveChars)
 	e.Dirty = true
 
-	e.Cy++
-	e.Cx = 0
+	e.Cursor.Row++
+	e.Cursor.Col = 0
 }
 
 // DelChar deletes a character at current cursor location
 func (e *Editor) DelChar() {
 	// if the cursor is at the line beyond the end of text
 	// then move it to the last line
-	if e.Cy == len(e.Rows) {
+	if e.Cursor.Row == len(e.Rows) {
 		if len(e.Rows) == 0 {
 			return
 		}
-		e.Cy = len(e.Rows) - 1
-		e.Cx = len(e.Rows[e.Cy])
+		e.Cursor.Row = len(e.Rows) - 1
+		e.Cursor.Col = len(e.Rows[e.Cursor.Row])
 	}
 
 	// if at the beginning of the text, then do nothing
-	if e.Cx == 0 && e.Cy == 0 {
+	if e.Cursor.Col == 0 && e.Cursor.Row == 0 {
 		return
 	}
 
 	// different handling for at the beginning of the line or middle of line
-	if e.Cx > 0 {
-		row := e.Rows[e.Cy]
-		copy(row[e.Cx-1:], row[e.Cx:])
+	if e.Cursor.Col > 0 {
+		row := e.Rows[e.Cursor.Row]
+		copy(row[e.Cursor.Col-1:], row[e.Cursor.Col:])
 		row = row[:len(row)-1]
-		e.Rows[e.Cy] = row
-		e.Cx--
+		e.Rows[e.Cursor.Row] = row
+		e.Cursor.Col--
 	} else {
-		e.Cx = len(e.Rows[e.Cy-1])
-		e.Rows[e.Cy-1] = append(e.Rows[e.Cy-1], e.Rows[e.Cy]...)
-		e.DelRow(e.Cy)
-		e.Cy--
+		e.Cursor.Col = len(e.Rows[e.Cursor.Row-1])
+		e.Rows[e.Cursor.Row-1] = append(e.Rows[e.Cursor.Row-1], e.Rows[e.Cursor.Row]...)
+		e.DelRow(e.Cursor.Row)
+		e.Cursor.Row--
 	}
 	e.Dirty = true
 }
@@ -258,4 +260,22 @@ func (e *Editor) DelRow(rowidx int) {
 	copy(e.Rows[rowidx:], e.Rows[rowidx+1:])
 	e.Rows = e.Rows[:len(e.Rows)-1]
 	e.Dirty = true
+}
+
+// Find searches the whole editor for a text
+func (e *Editor) Find(search ERow) []Point {
+	ret := []Point{}
+
+	for i := 0; i < len(e.Rows); i++ {
+		if idx := runes.Index(runes.ToLower(e.Rows[i]), runes.ToLower(search)); idx != -1 {
+			ret = append(ret, Point{Col: idx, Row: i})
+		}
+	}
+	return ret
+}
+
+// SetCursor sets the cursor to a specific point
+func (e *Editor) SetCursor(p Point) {
+	e.Cursor.Col = p.Col
+	e.Cursor.Row = p.Row
 }

@@ -89,7 +89,7 @@ func main() {
 		s.Dispatch(k)
 
 		// if it's been 5 secs since the last status message, reset
-		if time.Now().Sub(s.StatusMessageTime) > time.Second*5 && s.Prompt == nil {
+		if time.Now().Sub(s.StatusMessageTime) > time.Second*5 && s.State == stateEditing {
 			s.setStatusMessage("")
 		}
 

@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+// Point is a utility struct
+type Point struct {
+	Col, Row int
+}
+
 // Session stores state pertaining to the editing session
 type Session struct {
 	Prompt            *LineEditor
@@ -15,6 +20,9 @@ type Session struct {
 	StatusMessageTime time.Time
 	OrigTermCfg       []byte
 	State             editorState
+	FindPoints        []Point
+	CurFindPoint      int
+	BeforFindPoint    Point
 }
 
 func (s *Session) setStatusMessage(msg string) {
@@ -48,6 +56,51 @@ func (s *Session) endSavePrompt(save bool) {
 	s.State = stateEditing
 }
 
+func (s *Session) startFindPrompt() {
+	s.State = stateFindPrompt
+	s.setStatusMessage("Find: ")
+	s.Prompt = NewLineEditor()
+}
+
+func (s *Session) endFindPrompt(findnav bool) {
+	if !findnav {
+		s.Prompt = nil
+		s.setStatusMessage("")
+		s.State = stateEditing
+		return
+	}
+	s.startFindNav()
+}
+
+func (s *Session) startFindNav() {
+	findText := s.Prompt.Row.Text()
+	s.State = stateFindNav
+	s.Prompt = nil
+
+	s.FindPoints = s.Editor.Find(findText)
+	if len(s.FindPoints) == 0 {
+		s.setStatusMessage("No match found!")
+		s.FindPoints = nil
+		s.CurFindPoint = -1
+		s.Prompt = nil
+		s.State = stateEditing
+		return
+	}
+	s.BeforFindPoint = s.Editor.Cursor
+	s.CurFindPoint = 0
+	s.Editor.SetCursor(s.FindPoints[s.CurFindPoint])
+	s.setStatusMessage("Use arrow keys to move, ESC or ENTER to exit")
+}
+
+func (s *Session) endFindNav() {
+	s.BeforFindPoint = Point{}
+	s.FindPoints = nil
+	s.CurFindPoint = -1
+	s.Prompt = nil
+	s.State = stateEditing
+	s.setStatusMessage("")
+}
+
 /*Dispatch decides what action to take given the user's key and current state
 
 					stateEditing	stateSavePrompt		stateQuitPrompt		stateFindPromp		stateFindNav
@@ -55,7 +108,7 @@ stateEditing		any other key	Ctrl+S & NoFname	Ctrl+Q & Dirty		Ctrl+F
 stateSavePrompt		Esc or Enter	any other key
 stateQuitPrompt		any other key	Ctrl+Q
 stateFindPrompt		Esc										any other key		Enter
-stateFindNav		Esc or Enter
+stateFindNav		Esc or Enter																arrow keys
 
 */
 func (s *Session) Dispatch(k terminal.Key) {
@@ -73,6 +126,8 @@ func (s *Session) Dispatch(k terminal.Key) {
 			} else {
 				s.startSavePrompt()
 			}
+		case k.Regular == ctrlKey('F'):
+			s.startFindPrompt()
 		default:
 			s.editorDispatch(k)
 		}
@@ -93,6 +148,37 @@ func (s *Session) Dispatch(k terminal.Key) {
 			s.lineEditorDispatch(k)
 		}
 
+	case stateFindPrompt:
+		switch {
+		case k.Regular == '\r':
+			s.endFindPrompt(true)
+		case k.Regular == 27:
+			s.endFindPrompt(false)
+		default:
+			s.lineEditorDispatch(k)
+		}
+
+	case stateFindNav:
+		switch {
+		case k.Special == terminal.KeyArrowUp, k.Special == terminal.KeyArrowLeft:
+			s.CurFindPoint--
+			if s.CurFindPoint < 0 {
+				s.CurFindPoint = len(s.FindPoints) - 1
+			}
+			s.Editor.SetCursor(s.FindPoints[s.CurFindPoint])
+
+		case k.Special == terminal.KeyArrowDown, k.Special == terminal.KeyArrowRight:
+			s.CurFindPoint++
+			if s.CurFindPoint >= len(s.FindPoints) {
+				s.CurFindPoint = 0
+			}
+			s.Editor.SetCursor(s.FindPoints[s.CurFindPoint])
+		case k.Regular == 27:
+			s.Editor.SetCursor(s.BeforFindPoint)
+			s.endFindNav()
+		case k.Regular == '\r':
+			s.endFindNav()
+		}
 	}
 }
 
@@ -122,7 +208,9 @@ func (s *Session) editorDispatch(k terminal.Key) {
 			s.Editor.DelChar()
 
 		default:
-			s.Editor.InsertChar(k.Regular)
+			if k.Regular >= 32 {
+				s.Editor.InsertChar(k.Regular)
+			}
 		}
 	} else {
 		switch k.Special {
@@ -146,10 +234,10 @@ func (s *Session) editorDispatch(k terminal.Key) {
 			s.Editor.CursorEnd()
 
 		case terminal.KeyPageUp:
-			s.Editor.CursorPageUp(s.View.ScreenRows, s.View.RowOffset)
+			s.Editor.CursorPageUp(s.View.ScreenSize.Row, s.View.RowOffset)
 
 		case terminal.KeyPageDown:
-			s.Editor.CursorPageDown(s.View.ScreenRows, s.View.RowOffset)
+			s.Editor.CursorPageDown(s.View.ScreenSize.Row, s.View.RowOffset)
 
 		case terminal.KeyDelete:
 			s.Editor.CursorRight()
@@ -166,7 +254,9 @@ func (s *Session) lineEditorDispatch(k terminal.Key) {
 			s.Prompt.DelChar()
 
 		default:
-			s.Prompt.InsertChar(k.Regular)
+			if k.Regular >= 32 {
+				s.Prompt.InsertChar(k.Regular)
+			}
 		}
 	} else {
 		switch k.Special {
