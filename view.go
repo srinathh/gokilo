@@ -73,7 +73,7 @@ func (v *View) RefreshScreen(e *Editor, statusMsg string, prompt *LineEditor) {
 	v.DrawStatusMsg(&ab, statusMsg)
 	if prompt != nil {
 		fmt.Fprint(&ab, string(prompt.Row.Text()))
-		fmt.Fprintf(&ab, "\x1b[%d;%dH", v.ScreenRows, len(statusMsg)+prompt.Cx)
+		fmt.Fprintf(&ab, "\x1b[%d;%dH", v.ScreenRows, len(statusMsg)+prompt.Cx+1)
 	} else {
 		fmt.Fprintf(&ab, "\x1b[%d;%dH", e.Cy-v.RowOffset+1, rx-v.ColOffset+1)
 	}

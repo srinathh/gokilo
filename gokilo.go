@@ -6,6 +6,7 @@ import (
 	"gokilo/rawmode"
 	"gokilo/terminal"
 	"os"
+	"time"
 )
 
 func ctrlKey(b byte) rune {
@@ -73,11 +74,11 @@ func main() {
 		}
 	}
 
-	s.StatusMsg = startMsg
+	s.setStatusMessage(startMsg)
 	s.State = stateEditing
 
 	for {
-		s.View.RefreshScreen(s.Editor, s.StatusMsg, s.Prompt)
+		s.View.RefreshScreen(s.Editor, s.StatusMessage, s.Prompt)
 
 		// read key
 		k, err := terminal.ReadKey()
@@ -85,35 +86,12 @@ func main() {
 			SafeExit(fmt.Errorf("Error reading from terminal: %s", err))
 		}
 
-		switch s.State {
-		case stateEditing:
-			switch {
-			case k.Regular == ctrlKey('Q'):
-				if !s.Editor.Dirty {
-					SafeExit(nil)
-				}
-				startQuitPrompt()
-			default:
-				editingStateDispatch(k, s.View, s.Editor)
-			}
-		case stateQuitPrompt:
-			if k.Regular == ctrlKey('Q') {
-				SafeExit(nil)
-			}
-			endQuitPromt()
+		s.Dispatch(k)
+
+		// if it's been 5 secs since the last status message, reset
+		if time.Now().Sub(s.StatusMessageTime) > time.Second*5 && s.Prompt == nil {
+			s.setStatusMessage("")
 		}
 
 	}
 }
-
-/*
-
-					stateEditing	stateSavePrompt		stateQuitPrompt		stateFindPromp		stateFindNav
-stateEditing		any other key	Ctrl+S & NoFname	Ctrl+Q & Dirty		Ctrl+F
-stateSavePrompt		Esc or Enter	any other key
-stateQuitPrompt		any other key	Ctrl+Q
-stateFindPrompt		Esc										any other key		Enter
-stateFindNav		Esc or Enter
-
-
-*/

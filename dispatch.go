@@ -1,77 +1,191 @@
 package main
 
 import (
+	"fmt"
 	"gokilo/terminal"
+	"time"
 )
 
 // Session stores state pertaining to the editing session
 type Session struct {
-	Prompt      *LineEditor
-	Editor      *Editor
-	View        *View
-	StatusMsg   string
-	OrigTermCfg []byte
-	State       editorState
+	Prompt            *LineEditor
+	Editor            *Editor
+	View              *View
+	StatusMessage     string
+	StatusMessageTime time.Time
+	OrigTermCfg       []byte
+	State             editorState
+}
+
+func (s *Session) setStatusMessage(msg string) {
+	s.StatusMessage = msg
+	s.StatusMessageTime = time.Now()
+}
+
+func (s *Session) saveFile() {
+	if err := Save(s.Editor.Rows, s.Editor.FileName); err != nil {
+		s.setStatusMessage(fmt.Sprintf("Error saving %s: %s", s.Editor.FileName, err))
+	} else {
+		s.setStatusMessage(fmt.Sprintf("Saved %s", s.Editor.FileName))
+		s.Editor.Dirty = false
+	}
+}
+
+func (s *Session) startSavePrompt() {
+	s.State = stateSavePrompt
+	s.setStatusMessage("Enter filename: ")
+	s.Prompt = NewLineEditor()
+}
+
+func (s *Session) endSavePrompt(save bool) {
+	if save {
+		s.Editor.FileName = string(s.Prompt.Row.Text())
+		s.saveFile()
+	} else {
+		s.setStatusMessage("")
+	}
+	s.Prompt = nil
+	s.State = stateEditing
+}
+
+/*Dispatch decides what action to take given the user's key and current state
+
+					stateEditing	stateSavePrompt		stateQuitPrompt		stateFindPromp		stateFindNav
+stateEditing		any other key	Ctrl+S & NoFname	Ctrl+Q & Dirty		Ctrl+F
+stateSavePrompt		Esc or Enter	any other key
+stateQuitPrompt		any other key	Ctrl+Q
+stateFindPrompt		Esc										any other key		Enter
+stateFindNav		Esc or Enter
+
+*/
+func (s *Session) Dispatch(k terminal.Key) {
+	switch s.State {
+	case stateEditing:
+		switch {
+		case k.Regular == ctrlKey('Q'):
+			if !s.Editor.Dirty {
+				SafeExit(nil)
+			}
+			s.startQuitPrompt()
+		case k.Regular == ctrlKey('S'):
+			if s.Editor.FileName != "" {
+				s.saveFile()
+			} else {
+				s.startSavePrompt()
+			}
+		default:
+			s.editorDispatch(k)
+		}
+
+	case stateQuitPrompt:
+		if k.Regular == ctrlKey('Q') {
+			SafeExit(nil)
+		}
+		s.endQuitPromt()
+
+	case stateSavePrompt:
+		switch {
+		case k.Regular == '\r':
+			s.endSavePrompt(true)
+		case k.Regular == 27:
+			s.endSavePrompt(false)
+		default:
+			s.lineEditorDispatch(k)
+		}
+
+	}
 }
 
 // startQuitPrompt will set the status message
-func startQuitPrompt() {
+func (s *Session) startQuitPrompt() {
 	s.State = stateQuitPrompt
-	s.StatusMsg = "Unsaved Chages! Press Ctrl+Q again to quit, any other key to cancel"
+	s.setStatusMessage("Unsaved Chages! Press Ctrl+Q again to quit, any other key to cancel")
 	s.Prompt = NewLineEditor()
 }
 
 // startQuitPrompt will set the status message
-func endQuitPromt() {
+func (s *Session) endQuitPromt() {
 	s.State = stateEditing
-	s.StatusMsg = ""
+	s.setStatusMessage("")
 	s.Prompt = nil
 }
 
-func editingStateDispatch(k terminal.Key, v *View, e *Editor) {
+func (s *Session) editorDispatch(k terminal.Key) {
 
 	if k.Special == terminal.KeyNoSpl {
 		switch k.Regular {
 		case '\r':
-			e.InsertNewline()
+			s.Editor.InsertNewline()
 			break
 
 		case ctrlKey('h'), 127:
-			e.DelChar()
+			s.Editor.DelChar()
 
 		default:
-			e.InsertChar(k.Regular)
+			s.Editor.InsertChar(k.Regular)
 		}
 	} else {
 		switch k.Special {
 
 		case terminal.KeyArrowDown:
-			e.CursorDown()
+			s.Editor.CursorDown()
 
 		case terminal.KeyArrowLeft:
-			e.CursorLeft()
+			s.Editor.CursorLeft()
 
 		case terminal.KeyArrowRight:
-			e.CursorRight()
+			s.Editor.CursorRight()
 
 		case terminal.KeyArrowUp:
-			e.CursorUp()
+			s.Editor.CursorUp()
 
 		case terminal.KeyHome:
-			e.CursorHome()
+			s.Editor.CursorHome()
 
 		case terminal.KeyEnd:
-			e.CursorEnd()
+			s.Editor.CursorEnd()
 
 		case terminal.KeyPageUp:
-			e.CursorPageUp(v.ScreenRows, v.RowOffset)
+			s.Editor.CursorPageUp(s.View.ScreenRows, s.View.RowOffset)
 
 		case terminal.KeyPageDown:
-			e.CursorPageDown(v.ScreenRows, v.RowOffset)
+			s.Editor.CursorPageDown(s.View.ScreenRows, s.View.RowOffset)
 
 		case terminal.KeyDelete:
-			e.CursorRight()
-			e.DelChar()
+			s.Editor.CursorRight()
+			s.Editor.DelChar()
+		}
+	}
+}
+
+func (s *Session) lineEditorDispatch(k terminal.Key) {
+
+	if k.Special == terminal.KeyNoSpl {
+		switch k.Regular {
+		case ctrlKey('h'), 127:
+			s.Prompt.DelChar()
+
+		default:
+			s.Prompt.InsertChar(k.Regular)
+		}
+	} else {
+		switch k.Special {
+
+		case terminal.KeyArrowLeft:
+			s.Prompt.CursorLeft()
+
+		case terminal.KeyArrowRight:
+			s.Prompt.CursorRight()
+
+		case terminal.KeyHome:
+			s.Prompt.CursorHome()
+
+		case terminal.KeyEnd:
+			s.Prompt.CursorEnd()
+
+		case terminal.KeyDelete:
+			s.Prompt.CursorRight()
+			s.Prompt.DelChar()
 		}
 	}
 }
