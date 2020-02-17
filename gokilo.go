@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gokilo/rawmode"
-	"gokilo/terminal"
 	"os"
 	"time"
+
+	"github.com/srinathh/gokilo/rawmode"
+	"github.com/srinathh/gokilo/terminal"
 )
 
 func ctrlKey(b byte) rune {

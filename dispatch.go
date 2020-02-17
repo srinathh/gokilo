@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"gokilo/terminal"
 	"time"
+
+	"github.com/srinathh/gokilo/terminal"
 )
 
 // Point is a utility struct
