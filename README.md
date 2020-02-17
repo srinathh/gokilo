@@ -12,8 +12,8 @@ of the tutorial are complete and we have a fully functional basic text edtor.
 ### Update
 
 GoKilo has been substantially re-written to a much more idiomatic Go style
-from the orivinal version that closely mirrored the C original while retaining
-much of the original logic. However, two substantial changes were made:
+from the original version that closely mirrored C while retaining
+much of the logic. However, two substantial changes were made during the rewrite:
 1. A small State Machine added to generalize handling of state changes between 
    editing, save prompt for new files, quit prompt in case of unsaved changes
    and find interaction vs. using embedded screen & keyboard logic
@@ -22,7 +22,7 @@ much of the original logic. However, two substantial changes were made:
 
 Extra Functionality in GoKilo
 -----------------------------
-1. Search functionality has been made case-insensitive by default
+1. Search functionality has been made case-insensitive by default and works slightly differently
 2. Native Windows console support - you can use GoKilo in PowerShell or Cmd
 
 Roadmap
