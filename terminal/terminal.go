@@ -2,7 +2,7 @@ package terminal
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"os"
 )
 
@@ -78,7 +78,7 @@ var specialKeys = map[int][]rune{
 
 // ErrNoInput indicates that there is no input when reading from keyboard
 // in raw mode. This happens when timeout is set to a low number
-var ErrNoInput = errors.New("no input")
+var ErrNoInput = fmt.Errorf("no input")
 
 // Key represents the key entered by the user
 type Key struct {
