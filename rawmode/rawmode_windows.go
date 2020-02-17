@@ -3,8 +3,9 @@
 package rawmode
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
-
 	"golang.org/x/sys/windows"
 )
 
@@ -30,7 +31,7 @@ func GetWindowSize() (int, int, error) {
 // Enable switches the console from cooked or canonical mode to raw mode.
 // It returns the current terminal settings for use in restoring console
 // serlialized to a platform independent byte slice via gob
-func Enable() ([]byte,error ){
+func Enable() ([]byte, error) {
 
 	oldSettings := winConsoleSettings{}
 
@@ -50,14 +51,14 @@ func Enable() ([]byte,error ){
 	var outSettings uint32 = windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING | windows.ENABLE_PROCESSED_OUTPUT | windows.DISABLE_NEWLINE_AUTO_RETURN
 
 	if err := windows.SetConsoleMode(windows.Stdin, inSettings); err != nil {
-		return buf, fmt.Errorf("error setting raw mode: %w", err)
+		return buf.Bytes(), fmt.Errorf("error setting raw mode: %w", err)
 	}
 
 	if err := windows.SetConsoleMode(windows.Stdout, outSettings); err != nil {
-		return buf, fmt.Errorf("error setting output VT100: %s", err)
+		return buf.Bytes(), fmt.Errorf("error setting output VT100: %s", err)
 	}
 
-	return buf, nil
+	return buf.Bytes(), nil
 }
 
 // Restore restoes the console to a previous row setting
