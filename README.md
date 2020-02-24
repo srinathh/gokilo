@@ -19,6 +19,8 @@ much of the logic. However, two substantial changes were made during the rewrite
    and find interaction vs. using embedded screen & keyboard logic
 2. A line editor derived from the full Editor used to handle user prompts 
    vs. custom key-handling in find function in the original
+3. I am starting development of a tutorial to build a simpler version 
+   of GoKilo at github.com/gokilo modeled on the original one
 
 Extra Functionality in GoKilo
 -----------------------------
